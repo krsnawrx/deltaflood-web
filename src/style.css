@@ -4,7 +4,8 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  cursor: none; /* Hide default cursor */
+  cursor: none;
+  /* Hide default cursor */
 }
 
 body {
@@ -49,8 +50,13 @@ body {
 }
 
 @keyframes waveFlow {
-  0% { stroke-dashoffset: 200; }
-  100% { stroke-dashoffset: 0; }
+  0% {
+    stroke-dashoffset: 200;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+  }
 }
 
 .loader-text {
@@ -168,7 +174,7 @@ body {
   font-size: 5rem;
   font-weight: 900;
   letter-spacing: 0.8rem;
-  background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.2) 100%);
+  background: linear-gradient(180deg, #fff 0%, rgba(255, 255, 255, 0.2) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -185,8 +191,17 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.3; transform: translateY(0); }
-  50% { opacity: 0.8; transform: translateY(-5px); }
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: translateY(-5px);
+  }
 }
 
 /* --- BRIEFING CARDS --- */
@@ -279,5 +294,34 @@ body {
   color: rgba(255, 255, 255, 0.8);
   opacity: 0;
   transform: translateY(10px);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* --- PATNA NARRATION --- */
+.patna-narration {
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  pointer-events: none;
+}
+
+.narration-line {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.1rem;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+.narration-line.location {
+  font-size: 0.9rem;
+  color: rgba(255, 50, 50, 1);
+  margin-top: 1rem;
+  letter-spacing: 0.3rem;
 }

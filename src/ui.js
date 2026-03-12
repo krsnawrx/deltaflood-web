@@ -1,8 +1,7 @@
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-/**
- * UI Overlay System for DeltaFlood
- */
+gsap.registerPlugin(ScrollTrigger);
 
 // --- LOADER ---
 export function initLoader() {
@@ -20,7 +19,6 @@ export function initLoader() {
         });
     });
 
-    // Fallback: hide loader after 5 seconds if window.load hasn't fired
     setTimeout(() => {
         if (loader.style.display !== 'none') {
             gsap.to(loader, {
@@ -40,7 +38,7 @@ export function initSoundToggle() {
     const btn = document.getElementById('sound-toggle');
     if (!btn) return;
 
-    let isMuted = false; // sound starts ON after first interaction
+    let isMuted = false;
 
     const speakerIcon = `
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -49,24 +47,15 @@ export function initSoundToggle() {
 
     const muteIcon = `
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M5.889 16H2V8h3.889l5.294-4.332C11.644 3.292 12 3.613 12 4.09v15.82c0 .477-.356.798-.817.422L5.889 16zm13.518-4L22 14.59 20.59 16 18 13.41 15.41 16 14 14.59 16.59 12 14 9.41 15.41 8 18 10.59 20.59 8 22 9.41 19.407 12z"/>
+    <path d="M5.889 16H2V8h3.889l5.294-4.332C11.644 3.292 12 3.613 12 4.09v15.82c0 .477-.356.798-.817.422L5.889 16zm13.518-4L22 14.59 20.59 16 18 13.41 15.41 16 14 14.59 16.59 12 14 9.41 15.41 8 22 9.41 19.407 12z"/>
   </svg>`;
 
-    // set initial icon
     btn.innerHTML = speakerIcon;
 
     btn.addEventListener('click', () => {
         isMuted = !isMuted;
-
-        // update icon
         btn.innerHTML = isMuted ? muteIcon : speakerIcon;
-
-        // notify main.js
-        const event = new CustomEvent('soundToggled', {
-            detail: { isMuted }
-        });
-
-        window.dispatchEvent(event);
+        window.dispatchEvent(new CustomEvent('soundToggled', { detail: { isMuted } }));
     });
 }
 
@@ -89,36 +78,16 @@ export function initCustomCursor() {
     const follower = document.getElementById('cursor-follower');
     if (!cursor || !follower) return;
 
-    let mouseX = 0;
-    let mouseY = 0;
-
     window.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-
-        gsap.to(cursor, {
-            x: mouseX,
-            y: mouseY,
-            duration: 0.1
-        });
-
-        gsap.to(follower, {
-            x: mouseX,
-            y: mouseY,
-            duration: 0.3
-        });
+        gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+        gsap.to(follower, { x: e.clientX, y: e.clientY, duration: 0.3 });
     });
 
-    // Create ripples on click
     window.addEventListener('mousedown', (e) => {
-        createRipple(e.clientX, e.clientY);
-    });
-
-    function createRipple(x, y) {
         const ripple = document.createElement('div');
         ripple.className = 'cursor-ripple';
-        ripple.style.left = x + 'px';
-        ripple.style.top = y + 'px';
+        ripple.style.left = e.clientX + 'px';
+        ripple.style.top = e.clientY + 'px';
         document.body.appendChild(ripple);
 
         gsap.to(ripple, {
@@ -126,14 +95,12 @@ export function initCustomCursor() {
             opacity: 0,
             duration: 1,
             ease: "power2.out",
-            onComplete: () => {
-                ripple.remove();
-            }
+            onComplete: () => ripple.remove()
         });
-    }
+    });
 }
 
-// --- SATELLITE BRIEFING ---
+// --- SATELLITE BRIEFING CARDS ---
 export function initBriefingCards() {
     const cards = document.querySelectorAll('.briefing-card');
     if (!cards.length) return;
@@ -167,23 +134,20 @@ export function initSpectralUI() {
         scrollTrigger: {
             trigger: "#satellite",
             start: "top bottom",
-            end: "top center", // Should match main.js satellite movement
+            end: "top center",
             scrub: 1
         }
     });
 
-    // Animate labels matching the plane deployment order in main.js
     labels.forEach((label, i) => {
-        // We start these appearing slightly after the briefing cards
         tl.to(label, {
             opacity: 1,
             x: 0,
             duration: 0.5,
             ease: "power2.out"
-        }, 3.0 + (i * 0.3)); // Offset ensures it happens deeper into the scroll
+        }, 3.0 + (i * 0.3));
     });
 
-    // Description text fades in last
     tl.to(description, {
         opacity: 1,
         y: 0,
@@ -192,7 +156,30 @@ export function initSpectralUI() {
     }, 4.0);
 }
 
-// Initialize all
+// --- PATNA NARRATION ---
+export function initPatnaNarration() {
+    const lines = document.querySelectorAll('.narration-line')
+    if (!lines.length) return
+
+    lines.forEach((line, i) => {
+        gsap.fromTo(line,
+            { opacity: 0, y: 20 },
+            {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                scrollTrigger: {
+                    trigger: '#patna',
+                    start: `${20 + i * 12}% top`,
+                    end: `${35 + i * 12}% top`,
+                    scrub: 1
+                }
+            }
+        )
+    })
+}
+
+// --- INIT ALL ---
 document.addEventListener('DOMContentLoaded', () => {
     initLoader();
     initSoundToggle();
@@ -200,4 +187,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initCustomCursor();
     initBriefingCards();
     initSpectralUI();
+    initPatnaNarration();
 });
