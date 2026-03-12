@@ -1,0 +1,7 @@
+node_modules
+dist
+.DS_Store
+.env
+src/assets/earth.jpg
+src/assets/satellite.glb
+src/assets/sounds/
