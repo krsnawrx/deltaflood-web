@@ -1,5 +1,9 @@
 import * as THREE from 'three'
 import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+
+gsap.registerPlugin(ScrollTrigger)
 
 // Scene setup
 const scene = new THREE.Scene()
@@ -53,6 +57,18 @@ const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.02 })
 const stars = new THREE.Points(starGeometry, starMaterial)
 scene.add(stars)
 
+// Satellite
+let satellite
+const gltfLoader = new GLTFLoader()
+
+gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
+  satellite = gltf.scene
+  satellite.scale.set(0.02, 0.02, 0.02)
+  satellite.position.set(5, 2, 0)
+  satellite.visible = false
+  scene.add(satellite)
+})
+
 // Mouse state
 let isDragging = false
 let mouseX = 0
@@ -67,6 +83,44 @@ window.addEventListener('mousedown', (e) => {
 window.addEventListener('mouseup', () => isDragging = false)
 
 window.addEventListener('mousemove', (e) => {
+
+// Scroll animations
+ScrollTrigger.create({
+  trigger: '#satellite',
+  start: 'top center',
+  onEnter: () => {
+    const showSatellite = () => {
+      if(!satellite) {
+        setTimeout(showSatellite, 100)
+        return
+      }
+      satellite.visible = true
+      satellite.position.set(5, 2, 0)
+      gsap.to(satellite.position, {
+        x: 2,
+        y: 0.5,
+        z: 0,
+        duration: 2,
+        ease: 'power2.out'
+      })
+      gsap.to(earth.position, {
+        x: -1,
+        duration: 2,
+        ease: 'power2.out'
+      })
+    }
+    showSatellite()
+  },
+  onLeaveBack: () => {
+    if(!satellite) return
+    satellite.visible = false
+    gsap.to(earth.position, {
+      x: 0,
+      duration: 1
+    })
+  }
+})
+
   // Parallax values
   mouseX = (e.clientX / window.innerWidth - 0.5) * 2
   mouseY = (e.clientY / window.innerHeight - 0.5) * 2
