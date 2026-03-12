@@ -8,6 +8,29 @@
 </head>
 <body>
   <canvas id="webgl"></canvas>
+
+  <!-- UI ORBITAL OVERLAYS -->
+  <div id="loader">
+    <div class="wave-container">
+      <svg class="wave-svg" viewBox="0 0 100 20">
+        <path d="M0,10 Q25,0 50,10 T100,10" fill="none" stroke="#00d2ff" stroke-width="0.5" />
+      </svg>
+    </div>
+    <div class="loader-text">Loading DeltaFlood...</div>
+  </div>
+
+  <div id="cursor"></div>
+  <div id="cursor-follower"></div>
+
+  <div id="scroll-tracker">
+    <div id="scroll-progress"></div>
+  </div>
+
+  <button id="sound-toggle" title="Toggle Sound">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M5.889 16H2V8h3.889l5.294-4.332C11.644 3.292 12 3.613 12 4.09v15.82c0 .477-.356.798-.817.422L5.889 16zm13.518-4L22 14.59 20.59 16 18 13.41 15.41 16 14 14.59 16.59 12 14 9.41 15.41 8 18 10.59 20.59 8 22 9.41 19.407 12z"/>
+    </svg>
+  </button>
   
   <div id="sections">
     <section id="hero" class="section">
@@ -25,5 +48,6 @@
   </div>
 
   <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/ui.js"></script>
 </body>
 </html>

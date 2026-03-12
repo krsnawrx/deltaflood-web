@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { latLongToVector3 } from './utils/latLongToVector3.js'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -136,16 +137,13 @@ window.addEventListener('mousemove', () => {
 
 }, { once: true })
 
-window.addEventListener('mousedown', () => {
-
-  if (spaceAudio.paused) {
-
-    spaceAudio.play()
-    gsap.to(spaceAudio, { volume: 0.4, duration: 3 })
-
-  }
-
-}, { once: true })
+window.addEventListener('soundToggled', (e) => {
+  const { isMuted } = e.detail;
+  gsap.to(spaceAudio, { 
+    volume: isMuted ? 0 : 0.4, 
+    duration: 1 
+  });
+});
 
 
 /* ============================
@@ -161,6 +159,7 @@ scene.add(satellitePivot)
 
 let satellite
 let bands = []
+let satelliteOrbitActive = false
 
 const gltfLoader = new GLTFLoader()
 
@@ -219,10 +218,13 @@ gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
   const tl = gsap.timeline({
 
     scrollTrigger: {
-      trigger: "body",
-      start: "top top",
-      end: "35% top",
-      scrub: 1
+      trigger: "#satellite",
+      start: "top center",
+      end: "bottom center",
+      scrub: 1,
+
+      onEnter: () => satelliteOrbitActive = true,
+      onLeaveBack: () => satelliteOrbitActive = false
     }
 
   })
@@ -319,7 +321,7 @@ function animate() {
 
   atmosphere.rotation.y = earth.rotation.y
 
-  if (satellite) {
+  if (satelliteOrbitActive && satellite) {
     satellitePivot.rotation.y += 0.004
   }
 
