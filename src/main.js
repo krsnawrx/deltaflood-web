@@ -39,9 +39,8 @@ const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.05, siz
 const stars = new THREE.Points(starGeometry, starMaterial)
 scene.add(stars)
 
-// 4. Satellite System (Tilted Orbit for 3D depth)
+// 4. Satellite System + Spectral Bands
 const satellitePivot = new THREE.Object3D()
-// FIX: Tilting the pivot makes the orbit diagonal instead of flat
 satellitePivot.rotation.z = Math.PI / 6  
 satellitePivot.rotation.x = Math.PI / 12
 scene.add(satellitePivot)
@@ -53,7 +52,7 @@ const gltfLoader = new GLTFLoader()
 gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
   satellite = gltf.scene
   
-  satellite.scale.set(0.4, 0.4, 0.4) // Increased scale for impact
+  satellite.scale.set(1.5, 1.5, 1.5) 
   satellite.traverse((child) => {
     if (child.isMesh) {
       child.material.metalness = 1
@@ -62,13 +61,12 @@ gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
   })
   
   satellite.position.set(5, 0, 0) 
-  // FIX: Rotate the satellite model so it's not a flat line
   satellite.rotation.y = Math.PI / 2
   satellite.rotation.z = Math.PI / 8
-  
   satellitePivot.add(satellite)
 
-  const planeGeom = new THREE.PlaneGeometry(0.5, 0.8)
+  // REDUCED BAND SIZE: 0.15 width x 0.3 height (Much smaller/sharper)
+  const planeGeom = new THREE.PlaneGeometry(0.15, 0.3)
   const colors = [0xff0000, 0x00ff00, 0x0000ff] 
   
   colors.forEach((color) => {
@@ -81,7 +79,7 @@ gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
     })
     const mesh = new THREE.Mesh(planeGeom, mat)
     mesh.rotation.x = Math.PI / 2
-    mesh.position.y = -0.3
+    mesh.position.y = -0.15 // Moved closer to the satellite body
     satellite.add(mesh)
     bands.push(mesh)
   })
@@ -95,11 +93,12 @@ gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
     }
   })
 
+  // ADJUSTED SPLIT: Smaller offset (0.2) because the bands are smaller
   tl.to(satellite.position, { x: 1.8 }) 
     .addLabel("split")
-    .to(bands[0].position, { x: -0.6 }, "split") 
-    .to(bands[2].position, { x: 0.6 }, "split")  
-    .to(bands.map(b => b.material), { opacity: 0.6 }, "split") 
+    .to(bands[0].position, { x: -0.2 }, "split") // Small, clean separation
+    .to(bands[2].position, { x: 0.2 }, "split") 
+    .to(bands.map(b => b.material), { opacity: 0.8 }, "split") // Higher opacity for "laser" look
 
 }, undefined, (err) => console.error(err))
 
