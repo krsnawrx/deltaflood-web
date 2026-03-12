@@ -44,10 +44,10 @@ export function initSoundToggle() {
 
     btn.addEventListener('click', () => {
         isMuted = !isMuted;
-        
+
         // Update Icon
-        btn.innerHTML = isMuted ? 
-            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M5.889 16H2V8h3.889l5.294-4.332C11.644 3.292 12 3.613 12 4.09v15.82c0 .477-.356.798-.817.422L5.889 16zm13.518-4L22 14.59 20.59 16 18 13.41 15.41 16 14 14.59 16.59 12 14 9.41 15.41 8 18 10.59 20.59 8 22 9.41 19.407 12z"/></svg>' : 
+        btn.innerHTML = isMuted ?
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M5.889 16H2V8h3.889l5.294-4.332C11.644 3.292 12 3.613 12 4.09v15.82c0 .477-.356.798-.817.422L5.889 16zm13.518-4L22 14.59 20.59 16 18 13.41 15.41 16 14 14.59 16.59 12 14 9.41 15.41 8 18 10.59 20.59 8 22 9.41 19.407 12z"/></svg>' :
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M5.889 16H2V8h3.889l5.294-4.332C11.644 3.292 12 3.613 12 4.09v15.82c0 .477-.356.798-.817.422L5.889 16zm12.518-12.001l-1.42 1.42C19.018 7.438 20.5 9.43 20.5 12c0 2.57-1.482 4.562-3.512 6.581l1.42 1.42C21.018 17.562 23 15.43 23 12c0-3.43-1.983-5.563-4.593-8.001zm-3 3l-1.42 1.42a5.986 5.986 0 011.91 4.581c0 1.76-.75 3.34-1.91 4.581l1.42 1.42a7.994 7.994 0 002.503-6.001c0-2.31-1.01-4.41-2.503-6.001z"/></svg>';
 
         // Dispatch custom event for main.js to handle volume
@@ -119,10 +119,35 @@ export function initCustomCursor() {
     }
 }
 
+// --- SATELLITE BRIEFING ---
+export function initBriefingCards() {
+    const cards = document.querySelectorAll('.briefing-card');
+    if (!cards.length) return;
+
+    const tl = gsap.timeline({
+        scrollTrigger: {
+            trigger: "#satellite",
+            start: "top center",
+            end: "bottom center",
+            scrub: 1
+        }
+    });
+
+    cards.forEach((card, i) => {
+        tl.to(card, {
+            opacity: 1,
+            x: 0,
+            duration: 0.6,
+            ease: "power2.out"
+        }, i * 0.4);
+    });
+}
+
 // Initialize all
 document.addEventListener('DOMContentLoaded', () => {
     initLoader();
     initSoundToggle();
     initScrollProgress();
     initCustomCursor();
+    initBriefingCards();
 });
