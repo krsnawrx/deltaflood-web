@@ -39,29 +39,64 @@ const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.05, siz
 const stars = new THREE.Points(starGeometry, starMaterial)
 scene.add(stars)
 
-// 4. Satellite System
+// 4. Satellite System + Spectral Bands
 const satellitePivot = new THREE.Object3D()
 scene.add(satellitePivot)
 
 let satellite
+let bands = []
 const gltfLoader = new GLTFLoader()
 
 gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
   satellite = gltf.scene
-  satellite.scale.set(0.1, 0.1, 0.1)
-  satellite.position.set(5, 0, 0) // Starts far right
+  
+  //  Make it much bigger and shiny
+  satellite.scale.set(0.25, 0.25, 0.25) 
+  satellite.traverse((child) => {
+    if (child.isMesh) {
+      child.material.metalness = 1
+      child.material.roughness = 0.3
+    }
+  })
+  
+  satellite.position.set(5, 0, 0) // Start off-screen
   satellitePivot.add(satellite)
 
-  // SCRUB: Satellite moves in as you scroll down
-  gsap.to(satellite.position, {
-    x: 1.6,
+  //  Create the Spectral Planes (Red, Green, NIR)
+  const planeGeom = new THREE.PlaneGeometry(0.5, 0.8)
+  const colors = [0xff0000, 0x00ff00, 0x0000ff] 
+  
+  colors.forEach((color) => {
+    const mat = new THREE.MeshBasicMaterial({
+      color: color,
+      transparent: true,
+      opacity: 0,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending
+    })
+    const mesh = new THREE.Mesh(planeGeom, mat)
+    mesh.rotation.x = Math.PI / 2
+    mesh.position.y = -0.3
+    satellite.add(mesh)
+    bands.push(mesh)
+  })
+
+  //  Combined Scrub Animation (Entry + Band Split)
+  const tl = gsap.timeline({
     scrollTrigger: {
       trigger: "body",
       start: "top top",
-      end: "30% top",
+      end: "35% top",
       scrub: 1,
     }
   })
+
+  tl.to(satellite.position, { x: 1.8 }) // Move into orbit
+    .addLabel("split")
+    .to(bands[0].position, { x: -0.6 }, "split") // Red slides left
+    .to(bands[2].position, { x: 0.6 }, "split")  // NIR slides right
+    .to(bands.map(b => b.material), { opacity: 0.6 }, "split") // All bands fade in
+
 }, undefined, (err) => console.error(err))
 
 // 5. Lighting
