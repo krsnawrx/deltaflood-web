@@ -321,7 +321,8 @@ body {
 
 .narration-line.location {
   font-size: 0.9rem;
-  color: rgba(255, 50, 50, 1);
+  color: rgba(180, 220, 255, 1);
   margin-top: 1rem;
   letter-spacing: 0.3rem;
+  text-shadow: 0 0 20px rgba(100, 180, 255, 0.8);
 }
