@@ -268,13 +268,17 @@ const zoomTl = gsap.timeline({
     },
 
     onLeaveBack: () => {
-      // Restore space audio when scrolling back up
-      if (audioUnlocked) {
-        gsap.to(underwaterAudio, { volume: 0.2, duration: 2 })
-        gsap.to(spaceAudio, { volume: 0.4, duration: 2 })
-      }
-      satelliteOrbitActive = true
-    }
+  if (audioUnlocked) {
+    gsap.to(underwaterAudio, { volume: 0, duration: 2, onComplete: () => {
+  underwaterAudio.pause()
+  underwaterAudio.currentTime = 0
+}})
+spaceAudio.play().catch(() => {})
+gsap.to(spaceAudio, { volume: 0.4, duration: 2 })
+  }
+  satelliteOrbitActive = true
+  gsap.to(satellitePivot.scale, { x: 1, y: 1, z: 1, duration: 1, ease: 'power2.out' })
+}
   }
 })
 
