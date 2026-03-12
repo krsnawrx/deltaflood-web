@@ -27,7 +27,7 @@ const earthMaterial = new THREE.MeshPhongMaterial({
 const earth = new THREE.Mesh(earthGeometry, earthMaterial)
 scene.add(earth)
 
-// 3. Stars (Parallax layers)
+// 3. Stars
 const starGeometry = new THREE.BufferGeometry()
 const starCount = 8000
 const starPositions = new Float32Array(starCount * 3)
@@ -39,8 +39,11 @@ const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.05, siz
 const stars = new THREE.Points(starGeometry, starMaterial)
 scene.add(stars)
 
-// 4. Satellite System + Spectral Bands
+// 4. Satellite System (Tilted Orbit for 3D depth)
 const satellitePivot = new THREE.Object3D()
+// FIX: Tilting the pivot makes the orbit diagonal instead of flat
+satellitePivot.rotation.z = Math.PI / 6  
+satellitePivot.rotation.x = Math.PI / 12
 scene.add(satellitePivot)
 
 let satellite
@@ -50,8 +53,7 @@ const gltfLoader = new GLTFLoader()
 gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
   satellite = gltf.scene
   
-  //  Make it much bigger and shiny
-  satellite.scale.set(0.25, 0.25, 0.25) 
+  satellite.scale.set(0.4, 0.4, 0.4) // Increased scale for impact
   satellite.traverse((child) => {
     if (child.isMesh) {
       child.material.metalness = 1
@@ -59,10 +61,13 @@ gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
     }
   })
   
-  satellite.position.set(5, 0, 0) // Start off-screen
+  satellite.position.set(5, 0, 0) 
+  // FIX: Rotate the satellite model so it's not a flat line
+  satellite.rotation.y = Math.PI / 2
+  satellite.rotation.z = Math.PI / 8
+  
   satellitePivot.add(satellite)
 
-  //  Create the Spectral Planes (Red, Green, NIR)
   const planeGeom = new THREE.PlaneGeometry(0.5, 0.8)
   const colors = [0xff0000, 0x00ff00, 0x0000ff] 
   
@@ -81,7 +86,6 @@ gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
     bands.push(mesh)
   })
 
-  //  Combined Scrub Animation (Entry + Band Split)
   const tl = gsap.timeline({
     scrollTrigger: {
       trigger: "body",
@@ -91,40 +95,42 @@ gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
     }
   })
 
-  tl.to(satellite.position, { x: 1.8 }) // Move into orbit
+  tl.to(satellite.position, { x: 1.8 }) 
     .addLabel("split")
-    .to(bands[0].position, { x: -0.6 }, "split") // Red slides left
-    .to(bands[2].position, { x: 0.6 }, "split")  // NIR slides right
-    .to(bands.map(b => b.material), { opacity: 0.6 }, "split") // All bands fade in
+    .to(bands[0].position, { x: -0.6 }, "split") 
+    .to(bands[2].position, { x: 0.6 }, "split")  
+    .to(bands.map(b => b.material), { opacity: 0.6 }, "split") 
 
 }, undefined, (err) => console.error(err))
 
 // 5. Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
 scene.add(ambientLight)
+
 const sunLight = new THREE.DirectionalLight(0xffffff, 2.5)
 sunLight.position.set(5, 3, 5)
 scene.add(sunLight)
 
+// FIX: Headlamp light that follows the camera so satellite is never dark
+const headlamp = new THREE.PointLight(0xffffff, 2)
+camera.add(headlamp)
+scene.add(camera)
+
 // 6. Global Mouse/Interaction State
 let isDragging = false
-let mouseX = 0
-let mouseY = 0
+let mouseX = 0, mouseY = 0
 let previousMousePosition = { x: 0, y: 0 }
 
 window.addEventListener('mousedown', (e) => {
   isDragging = true
   previousMousePosition = { x: e.clientX, y: e.clientY }
 })
-
 window.addEventListener('mouseup', () => isDragging = false)
 
 window.addEventListener('mousemove', (e) => {
-  // Capture values for Parallax (Normalized -1 to +1)
   mouseX = (e.clientX / window.innerWidth - 0.5) * 2
   mouseY = (e.clientY / window.innerHeight - 0.5) * 2
 
-  // Handle Dragging
   if(isDragging) {
     const deltaMove = {
       x: e.clientX - previousMousePosition.x,
@@ -140,18 +146,13 @@ window.addEventListener('mousemove', (e) => {
 function animate() {
   requestAnimationFrame(animate)
   
-  // Auto-rotate Earth
   if(!isDragging) earth.rotation.y += 0.001
   
-  // Orbit the satellite
   satellitePivot.rotation.y += 0.004
 
-  // --- RE-ADDED PARALLAX MATH ---
-  // Stars move slightly opposite to mouse
   stars.rotation.x += (mouseY * 0.02 - stars.rotation.x) * 0.05
   stars.rotation.y += (mouseX * 0.02 - stars.rotation.y) * 0.05
   
-  // Earth shifts slightly to follow mouse
   earth.position.x += (mouseX * 0.1 - earth.position.x) * 0.05
   earth.position.y += (-mouseY * 0.1 - earth.position.y) * 0.05
 
