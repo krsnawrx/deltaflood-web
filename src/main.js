@@ -146,8 +146,9 @@ window.addEventListener('soundToggled', (e) => {
 ============================ */
 
 const satellitePivot = new THREE.Object3D()
-satellitePivot.rotation.z = Math.PI / 6
+satellitePivot.rotation.z = -Math.PI / 6
 satellitePivot.rotation.x = Math.PI / 12
+satellitePivot.scale.set(0, 0, 0) // hidden on load
 scene.add(satellitePivot)
 
 let satellite
@@ -168,7 +169,7 @@ gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
     }
   })
 
-  satellite.position.set(5, 0, 0)
+  satellite.position.set(-5, 0, 0)
   satellite.rotation.y = Math.PI / 2
   satellite.rotation.z = Math.PI / 8
 
@@ -199,12 +200,18 @@ gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
       start: "top center",
       end: "bottom center",
       scrub: 1,
-      onEnter: () => satelliteOrbitActive = true,
-      onLeaveBack: () => satelliteOrbitActive = false
+      onEnter: () => {
+        satelliteOrbitActive = true
+        gsap.to(satellitePivot.scale, { x: 1, y: 1, z: 1, duration: 1, ease: 'power2.out' })
+      },
+      onLeaveBack: () => {
+        satelliteOrbitActive = false
+        gsap.to(satellitePivot.scale, { x: 0, y: 0, z: 0, duration: 0.5 })
+      }
     }
   })
 
-  tl.to(satellite.position, { x: 1.8 })
+  tl.to(satellite.position, { x: -1.8 })
     .addLabel("split")
     .to(bands[0].position, { z: -0.08 }, "split")
     .to(bands[2].position, { z: 0.08 }, "split")
@@ -246,7 +253,6 @@ const PATNA_LAT = 25.5941
 const PATNA_LON = 85.1376
 const patnaVector = latLongToVector3(PATNA_LAT, PATNA_LON)
 
-// Phase 1: Camera zoom
 const zoomTl = gsap.timeline({
   scrollTrigger: {
     trigger: "#patna",
@@ -298,7 +304,7 @@ zoomTl.to(atmosphereMaterial, {
   duration: 0.5
 }, 0.3)
 
-// Phase 2: Water transition — separate ScrollTrigger
+// Phase 2: Water transition
 ScrollTrigger.create({
   trigger: "#patna",
   start: "68% top",
@@ -312,7 +318,6 @@ ScrollTrigger.create({
     window._waterVisible = true
     gsap.to(camera.position, { x: 0, y: 5, z: 0, duration: 1.5, ease: 'power2.inOut' })
     gsap.to(camera.rotation, { x: -Math.PI / 2, duration: 1.5, ease: 'power2.inOut' })
-    // Underwater audio fades in with water
     if (audioUnlocked) {
       underwaterAudio.play().catch(() => {})
       gsap.fromTo(underwaterAudio, { volume: 0 }, { volume: 0.5, duration: 3 })
@@ -378,8 +383,10 @@ window.addEventListener('mousedown', (e) => {
 window.addEventListener('mouseup', () => isDragging = false)
 
 window.addEventListener('mousemove', (e) => {
-  mouseX = (e.clientX / window.innerWidth - 0.5) * 2
-  mouseY = (e.clientY / window.innerHeight - 0.5) * 2
+  if (currentSection === 'hero') {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2
+  }
 
   if (isDragging && currentSection === 'hero') {
     const deltaMove = {
@@ -393,22 +400,6 @@ window.addEventListener('mousemove', (e) => {
       Math.min(Math.PI / 2, earth.rotation.x)
     )
   }
-
-  // Water distortion on mouse move — outside drag block
-  if (window._waterVisible && waterShader.visible) {
-  gsap.to(waterShader.material.uniforms['size'], {
-    value: 10,
-    duration: 0.3,
-    ease: 'power2.out',
-    onComplete: () => {
-      gsap.to(waterShader.material.uniforms['size'], {
-        value: 1,
-        duration: 1.5,
-        ease: 'power2.out'
-      })
-    }
-  })
-}
 
   previousMousePosition = { x: e.clientX, y: e.clientY }
 })
@@ -448,7 +439,6 @@ function animate() {
 
 animate()
 
-// TEMP: log earth rotation on keypress
 window.addEventListener('keypress', (e) => {
   if (e.key === 'r') {
     console.log('rotation Y:', earth.rotation.y, 'rotation X:', earth.rotation.x)
