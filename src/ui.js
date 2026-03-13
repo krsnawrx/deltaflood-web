@@ -179,6 +179,7 @@ export function initPatnaNarration() {
     })
 }
 
+
 // --- INIT ALL ---
 document.addEventListener('DOMContentLoaded', () => {
     initLoader();

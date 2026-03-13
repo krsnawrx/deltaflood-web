@@ -224,11 +224,12 @@ const waterShader = new Water(
     waterNormals: new THREE.TextureLoader().load('/src/assets/waternormals.jpg', (texture) => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping
     }),
-    sunDirection: new THREE.Vector3(0, 1, 0),
+    sunDirection: new THREE.Vector3(1, 1, 0).normalize(),
     sunColor: 0xffffff,
-    waterColor: 0x006994,
-    distortionScale: 3.7,
-    fog: false
+    waterColor: 0x0064b4,
+    distortionScale: 8,
+    fog: false,
+    alpha: 1.0
   }
 )
 
@@ -308,6 +309,7 @@ ScrollTrigger.create({
     gsap.to(atmosphereMaterial, { opacity: 0, duration: 1 })
     gsap.to(starMaterial, { opacity: 0, duration: 0.5 })
     waterShader.visible = true
+    window._waterVisible = true
     gsap.to(camera.position, { x: 0, y: 5, z: 0, duration: 1.5, ease: 'power2.inOut' })
     gsap.to(camera.rotation, { x: -Math.PI / 2, duration: 1.5, ease: 'power2.inOut' })
     // Underwater audio fades in with water
@@ -319,6 +321,7 @@ ScrollTrigger.create({
 
   onLeaveBack: () => {
     waterShader.visible = false
+    window._waterVisible = false
     gsap.to(earthMaterial, { opacity: 1, duration: 1 })
     gsap.to(atmosphereMaterial, { opacity: 0.25, duration: 1 })
     gsap.to(starMaterial, { opacity: 1, duration: 0.5 })
@@ -383,15 +386,29 @@ window.addEventListener('mousemove', (e) => {
       x: e.clientX - previousMousePosition.x,
       y: e.clientY - previousMousePosition.y
     }
-
     earth.rotation.y += deltaMove.x * 0.005
     earth.rotation.x += deltaMove.y * 0.005
-
     earth.rotation.x = Math.max(
       -Math.PI / 2,
       Math.min(Math.PI / 2, earth.rotation.x)
     )
   }
+
+  // Water distortion on mouse move — outside drag block
+  if (window._waterVisible && waterShader.visible) {
+  gsap.to(waterShader.material.uniforms['size'], {
+    value: 10,
+    duration: 0.3,
+    ease: 'power2.out',
+    onComplete: () => {
+      gsap.to(waterShader.material.uniforms['size'], {
+        value: 1,
+        duration: 1.5,
+        ease: 'power2.out'
+      })
+    }
+  })
+}
 
   previousMousePosition = { x: e.clientX, y: e.clientY }
 })

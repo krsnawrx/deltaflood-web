@@ -326,3 +326,15 @@ body {
   letter-spacing: 0.3rem;
   text-shadow: 0 0 20px rgba(100, 180, 255, 0.8);
 }
+
+/* --- WATER RIPPLE EFFECT --- */
+.water-ripple {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(0, 210, 255, 0.6);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+}
