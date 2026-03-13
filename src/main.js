@@ -3,6 +3,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { latLongToVector3 } from './utils/latLongToVector3.js'
+import { Water } from 'three/examples/jsm/objects/Water.js'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -122,16 +123,19 @@ underwaterAudio.preload = "auto"
 
 let audioUnlocked = false
 
-window.addEventListener('mousemove', () => {
-  if (!audioUnlocked) {
-    audioUnlocked = true
-    spaceAudio.play()
-      .then(() => {
-        gsap.to(spaceAudio, { volume: 0.4, duration: 3 })
-      })
-      .catch(e => console.log("Audio blocked:", e))
-  }
-}, { once: true })
+const unlockAudio = () => {
+  if (audioUnlocked) return
+  audioUnlocked = true
+  spaceAudio.play()
+    .then(() => {
+      gsap.to(spaceAudio, { volume: 0.4, duration: 3 })
+    })
+    .catch(e => console.log("Audio blocked:", e))
+}
+
+window.addEventListener('mousemove', unlockAudio, { once: true })
+window.addEventListener('pointerdown', unlockAudio, { once: true })
+window.addEventListener('scroll', unlockAudio, { once: true })
 
 window.addEventListener('soundToggled', (e) => {
   const { isMuted } = e.detail
