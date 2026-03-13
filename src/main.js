@@ -32,7 +32,6 @@ renderer.outputColorSpace = THREE.SRGBColorSpace
 
 camera.position.z = 3
 
-
 /* ============================
    EARTH
 ============================ */
@@ -46,12 +45,13 @@ const earthGeometry = new THREE.SphereGeometry(1, 64, 64)
 
 const earthMaterial = new THREE.MeshPhongMaterial({
   map: earthTexture,
-  shininess: 25
+  shininess: 25,
+  transparent: true,
+  opacity: 1
 })
 
 const earth = new THREE.Mesh(earthGeometry, earthMaterial)
 scene.add(earth)
-
 
 /* ============================
    ATMOSPHERE
@@ -68,7 +68,6 @@ const atmosphereMaterial = new THREE.MeshBasicMaterial({
 
 const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial)
 scene.add(atmosphere)
-
 
 /* ============================
    STARFIELD
@@ -106,7 +105,6 @@ const starMaterial = new THREE.PointsMaterial({
 const stars = new THREE.Points(starGeometry, starMaterial)
 scene.add(stars)
 
-
 /* ============================
    AUDIO
 ============================ */
@@ -142,7 +140,6 @@ window.addEventListener('soundToggled', (e) => {
   gsap.to(spaceAudio, { volume: isMuted ? 0 : 0.4, duration: 1 })
   gsap.to(underwaterAudio, { volume: isMuted ? 0 : 0.5, duration: 1 })
 })
-
 
 /* ============================
    SATELLITE
@@ -215,117 +212,128 @@ gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
 
 })
 
+/* ============================
+   WATER SHADER
+============================ */
+
+const waterShader = new Water(
+  new THREE.PlaneGeometry(10000, 10000),
+  {
+    textureWidth: 512,
+    textureHeight: 512,
+    waterNormals: new THREE.TextureLoader().load('/src/assets/waternormals.jpg', (texture) => {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping
+    }),
+    sunDirection: new THREE.Vector3(0, 1, 0),
+    sunColor: 0xffffff,
+    waterColor: 0x006994,
+    distortionScale: 3.7,
+    fog: false
+  }
+)
+
+waterShader.rotation.x = -Math.PI / 2
+waterShader.position.y = -2
+waterShader.visible = false
+scene.add(waterShader)
 
 /* ============================
    ZOOM TO PATNA
 ============================ */
 
-// Patna coordinates
 const PATNA_LAT = 25.5941
 const PATNA_LON = 85.1376
-
-// Get the 3D point on globe surface where Patna is
 const patnaVector = latLongToVector3(PATNA_LAT, PATNA_LON)
 
-// Target rotation — rotate Earth so Patna faces camera (positive Z axis)
-// We need to find the Y and X rotation angles that bring patnaVector to face (0,0,1)
-const targetRotationY = -1.485  // ~85° East longitude
-const targetRotationX = -0.446  // ~25° North latitude
-
-// Water surface — flat plane over Bihar region
-const waterGeometry = new THREE.PlaneGeometry(0.4, 0.3, 32, 32)
-const waterMaterial = new THREE.MeshStandardMaterial({
-  color: 0x006994,
-  transparent: true,
-  opacity: 0,
-  roughness: 0.1,
-  metalness: 0.3,
-})
-
-const waterSurface = new THREE.Mesh(waterGeometry, waterMaterial)
-
-// Position water just above Earth surface at Patna's location
-const waterPos = patnaVector.clone().multiplyScalar(1.01)
-waterSurface.position.copy(waterPos)
-
-// Orient water plane to be tangent to sphere surface
-waterSurface.lookAt(waterPos.clone().multiplyScalar(2))
-
-scene.add(waterSurface)
-
-// Zoom ScrollTrigger — triggers AFTER satellite section
+// Phase 1: Camera zoom
 const zoomTl = gsap.timeline({
   scrollTrigger: {
     trigger: "#patna",
     start: "50% top",
-    end: "90% top",
+    end: "67% top",
     scrub: 1.5,
 
     onEnter: () => {
-      // Crossfade audio: space out, underwater in
       if (audioUnlocked) {
-        gsap.to(spaceAudio, { volume: 0.2, duration: 2 })
-        underwaterAudio.play().catch(() => { })
-        gsap.to(underwaterAudio, { volume: 0.5, duration: 3 })
+        gsap.to(spaceAudio, { volume: 0.1, duration: 2 })
       }
-
+      if (satellite) {
+        gsap.to(satellitePivot.scale, { x: 0, y: 0, z: 0, duration: 1, ease: 'power2.in' })
+        gsap.to(bands.map(b => b.material), { opacity: 0, duration: 0.5 })
+        setTimeout(() => satelliteOrbitActive = false, 1000)
+      }
+      gsap.to(earth.rotation, {
+        y: 3.29,
+        x: 0.34,
+        duration: 2.5,
+        ease: "power2.inOut"
+      })
     },
 
     onLeaveBack: () => {
-  if (audioUnlocked) {
-    gsap.to(underwaterAudio, { volume: 0, duration: 2, onComplete: () => {
-  underwaterAudio.pause()
-  underwaterAudio.currentTime = 0
-}})
-spaceAudio.play().catch(() => {})
-gsap.to(spaceAudio, { volume: 0.4, duration: 2 })
-  }
-  satelliteOrbitActive = true
-  gsap.to(satellitePivot.scale, { x: 1, y: 1, z: 1, duration: 1, ease: 'power2.out' })
-}
+      if (audioUnlocked) {
+        spaceAudio.play().catch(() => {})
+        gsap.to(spaceAudio, { volume: 0.4, duration: 2 })
+      }
+      satelliteOrbitActive = true
+      gsap.to(satellitePivot.scale, { x: 1, y: 1, z: 1, duration: 1, ease: 'power2.out' })
+    }
   }
 })
 
-// Phase 1: Earth rotates to face India (0% - 30% of section scroll)
-ScrollTrigger.create({
-  trigger: "#patna",
-  start: "50% top",
-  once: false,
-  onEnter: () => {
-    gsap.to(earth.rotation, {
-      y: 3.29,
-      x: 0.34,  // reduce X to move south toward Bihar
-      duration: 2.5,
-      ease: "power2.inOut"
-    })
-  }
-})
-
-// Phase 2: Camera dives in toward Earth (20% - 80%)
 zoomTl.to(camera.position, {
   z: 1.9,
   duration: 1,
   ease: "power3.inOut"
 }, 0.2)
 
-// Stars fade out as we zoom in
 zoomTl.to(starMaterial, {
   opacity: 0,
   duration: 0.3
 }, 0.2)
 
-// Atmosphere intensifies as we get closer
 zoomTl.to(atmosphereMaterial, {
   opacity: 0.6,
   duration: 0.5
 }, 0.3)
 
-// Water surface fades in
-zoomTl.to(waterMaterial, {
-  opacity: 0.75,
-  duration: 0.4
-}, 0.6)
+// Phase 2: Water transition — separate ScrollTrigger
+ScrollTrigger.create({
+  trigger: "#patna",
+  start: "68% top",
+  once: false,
 
+  onEnter: () => {
+    gsap.to(earthMaterial, { opacity: 0, duration: 1.5 })
+    gsap.to(atmosphereMaterial, { opacity: 0, duration: 1 })
+    gsap.to(starMaterial, { opacity: 0, duration: 0.5 })
+    waterShader.visible = true
+    gsap.to(camera.position, { x: 0, y: 5, z: 0, duration: 1.5, ease: 'power2.inOut' })
+    gsap.to(camera.rotation, { x: -Math.PI / 2, duration: 1.5, ease: 'power2.inOut' })
+    // Underwater audio fades in with water
+    if (audioUnlocked) {
+      underwaterAudio.play().catch(() => {})
+      gsap.fromTo(underwaterAudio, { volume: 0 }, { volume: 0.5, duration: 3 })
+    }
+  },
+
+  onLeaveBack: () => {
+    waterShader.visible = false
+    gsap.to(earthMaterial, { opacity: 1, duration: 1 })
+    gsap.to(atmosphereMaterial, { opacity: 0.25, duration: 1 })
+    gsap.to(starMaterial, { opacity: 1, duration: 0.5 })
+    gsap.to(camera.position, { x: 0, y: 0, z: 1.9, duration: 1.5 })
+    gsap.to(camera.rotation, { x: 0, duration: 1.5 })
+    if (audioUnlocked) {
+      gsap.to(underwaterAudio, {
+        volume: 0, duration: 2, onComplete: () => {
+          underwaterAudio.pause()
+          underwaterAudio.currentTime = 0
+        }
+      })
+    }
+  }
+})
 
 /* ============================
    LIGHTING
@@ -342,7 +350,6 @@ const headlamp = new THREE.PointLight(0xffffff, 2)
 camera.add(headlamp)
 scene.add(camera)
 
-
 /* ============================
    MOUSE INTERACTION
 ============================ */
@@ -351,8 +358,6 @@ let isDragging = false
 let mouseX = 0
 let mouseY = 0
 let previousMousePosition = { x: 0, y: 0 }
-
-// Track which section we're in to disable drag during zoom
 let currentSection = 'hero'
 
 ScrollTrigger.create({
@@ -373,7 +378,6 @@ window.addEventListener('mousemove', (e) => {
   mouseX = (e.clientX / window.innerWidth - 0.5) * 2
   mouseY = (e.clientY / window.innerHeight - 0.5) * 2
 
-  // Only allow drag rotation on hero section
   if (isDragging && currentSection === 'hero') {
     const deltaMove = {
       x: e.clientX - previousMousePosition.x,
@@ -391,7 +395,6 @@ window.addEventListener('mousemove', (e) => {
 
   previousMousePosition = { x: e.clientX, y: e.clientY }
 })
-
 
 /* ============================
    ANIMATION LOOP
@@ -411,7 +414,10 @@ function animate() {
     satellitePivot.rotation.y += 0.004
   }
 
-  // Only apply parallax on hero
+  if (waterShader.visible) {
+    waterShader.material.uniforms['time'].value += 0.5 / 60.0
+  }
+
   if (currentSection === 'hero') {
     stars.rotation.x += (mouseY * 0.02 - stars.rotation.x) * 0.05
     stars.rotation.y += (mouseX * 0.02 - stars.rotation.y) * 0.05
@@ -421,17 +427,16 @@ function animate() {
   }
 
   renderer.render(scene, camera)
-
-  // TEMP: log earth rotation on keypress
-  window.addEventListener('keypress', (e) => {
-    if (e.key === 'r') {
-      console.log('rotation Y:', earth.rotation.y, 'rotation X:', earth.rotation.x)
-    }
-  })
 }
 
 animate()
 
+// TEMP: log earth rotation on keypress
+window.addEventListener('keypress', (e) => {
+  if (e.key === 'r') {
+    console.log('rotation Y:', earth.rotation.y, 'rotation X:', earth.rotation.x)
+  }
+})
 
 /* ============================
    RESIZE
