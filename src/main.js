@@ -7,6 +7,18 @@ import { Water } from 'three/examples/jsm/objects/Water.js'
 
 gsap.registerPlugin(ScrollTrigger)
 
+window.addEventListener('load', () => {
+  const sections = ['hero', 'satellite', 'patna', 'demo', 'model', 'impact', 'outro']
+  sections.forEach(id => {
+    const el = document.getElementById(id)
+    if (el) {
+      const rect = el.getBoundingClientRect()
+      console.log(`#${id}: top=${Math.round(rect.top + window.scrollY)}, height=${Math.round(el.offsetHeight)}`)
+    }
+  })
+  console.log('total page height:', document.body.scrollHeight)
+})
+
 /* ============================
    SCENE SETUP
 ============================ */
@@ -256,8 +268,8 @@ const patnaVector = latLongToVector3(PATNA_LAT, PATNA_LON)
 const zoomTl = gsap.timeline({
   scrollTrigger: {
     trigger: "#patna",
-    start: "50% top",
-    end: "67% top",
+    start: "10% top",
+    end: "30% top",
     scrub: 1.5,
 
     onEnter: () => {
@@ -279,7 +291,7 @@ const zoomTl = gsap.timeline({
 
     onLeaveBack: () => {
       if (audioUnlocked) {
-        spaceAudio.play().catch(() => {})
+        spaceAudio.play().catch(() => { })
         gsap.to(spaceAudio, { volume: 0.4, duration: 2 })
       }
       satelliteOrbitActive = true
@@ -307,7 +319,7 @@ zoomTl.to(atmosphereMaterial, {
 // Phase 2: Water transition
 ScrollTrigger.create({
   trigger: "#patna",
-  start: "68% top",
+  start: "32% top",
   once: false,
 
   onEnter: () => {
@@ -319,7 +331,7 @@ ScrollTrigger.create({
     gsap.to(camera.position, { x: 0, y: 5, z: 0, duration: 1.5, ease: 'power2.inOut' })
     gsap.to(camera.rotation, { x: -Math.PI / 2, duration: 1.5, ease: 'power2.inOut' })
     if (audioUnlocked) {
-      underwaterAudio.play().catch(() => {})
+      underwaterAudio.play().catch(() => { })
       gsap.fromTo(underwaterAudio, { volume: 0 }, { volume: 0.5, duration: 3 })
     }
   },
@@ -370,7 +382,7 @@ let currentSection = 'hero'
 
 ScrollTrigger.create({
   trigger: "#patna",
-  start: "50% top",
+  start: "10% top",
   onEnter: () => currentSection = 'patna',
   onLeaveBack: () => currentSection = 'hero'
 })
