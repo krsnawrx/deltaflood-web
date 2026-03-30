@@ -211,7 +211,7 @@ body {
   gap: 1.5rem;
   position: absolute;
   left: 5%;
-  top: 50%;
+  top: 22%;
   transform: translateY(-50%);
   width: 300px;
 }
@@ -247,7 +247,7 @@ body {
 .spectral-ui-container {
   position: absolute;
   right: 5%;
-  top: 50%;
+  top: 22%;
   transform: translateY(-50%);
   width: 350px;
   display: flex;
@@ -300,7 +300,7 @@ body {
 /* --- PATNA NARRATION --- */
 .patna-narration {
   position: absolute;
-  bottom: 15%;
+  top: 36%;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;

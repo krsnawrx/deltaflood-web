@@ -108,8 +108,8 @@ export function initBriefingCards() {
     const tl = gsap.timeline({
         scrollTrigger: {
             trigger: "#satellite",
-            start: "top 90%",
-            end: "50% 10%",
+            start: "top bottom",
+            end: "top center",
             scrub: 1
         }
     });
@@ -133,8 +133,8 @@ export function initSpectralUI() {
     const tl = gsap.timeline({
         scrollTrigger: {
             trigger: "#satellite",
-            start: "top 90%",
-            end: "50% 10%",
+            start: "top bottom",
+            end: "top center",
             scrub: 1
         }
     });
@@ -170,8 +170,8 @@ export function initPatnaNarration() {
                 duration: 0.6,
                 scrollTrigger: {
                     trigger: '#patna',
-                    start: `${12 + i * 8}% top`,
-                    end: `${20 + i * 8}% top`,
+                    start: `${20 + i * 12}% top`,
+                    end: `${35 + i * 12}% top`,
                     scrub: 1
                 }
             }

@@ -268,7 +268,7 @@ const patnaVector = latLongToVector3(PATNA_LAT, PATNA_LON)
 const zoomTl = gsap.timeline({
   scrollTrigger: {
     trigger: "#patna",
-    start: "10% top",
+    start: "1% top",
     end: "30% top",
     scrub: 1.5,
 
@@ -319,7 +319,7 @@ zoomTl.to(atmosphereMaterial, {
 // Phase 2: Water transition
 ScrollTrigger.create({
   trigger: "#patna",
-  start: "32% top",
+  start: "30% top",
   once: false,
 
   onEnter: () => {
