@@ -1,6 +1,6 @@
 /**
  * demo.js — Live flood detection via Hugging Face Gradio API
- * Handles file uploads, API calls, and canvas-composited result rendering.
+ * Handles file uploads with XHR progress, API calls, and canvas-composited result rendering.
  */
 
 const API_BASE = 'https://krsnawrx-deltaflood-api.hf.space';
@@ -8,19 +8,24 @@ const API_BASE = 'https://krsnawrx-deltaflood-api.hf.space';
 /* ── DOM refs ──────────────────────────────────────────────────────── */
 let beforeInput, afterInput, runBtn, resultsEl, loadingEl, errorEl;
 let satCanvas, overlayCanvas, statValueEl;
+let progressContainer, progressBar, progressText;
 let beforeFile = null, afterFile = null;
+let isUploading = false;
 
 /* ── Initialise ────────────────────────────────────────────────────── */
 function init() {
-  beforeInput  = document.querySelector('#upload-before input[type="file"]');
-  afterInput   = document.querySelector('#upload-after input[type="file"]');
-  runBtn       = document.getElementById('run-detection');
-  resultsEl    = document.getElementById('live-results');
-  loadingEl    = document.getElementById('live-loading');
-  errorEl      = document.getElementById('live-error');
-  satCanvas    = document.getElementById('result-satellite');
-  overlayCanvas = document.getElementById('result-overlay');
-  statValueEl  = document.getElementById('live-stat-value');
+  beforeInput    = document.querySelector('#upload-before input[type="file"]');
+  afterInput     = document.querySelector('#upload-after input[type="file"]');
+  runBtn         = document.getElementById('run-detection');
+  resultsEl      = document.getElementById('live-results');
+  loadingEl      = document.getElementById('live-loading');
+  errorEl        = document.getElementById('live-error');
+  satCanvas      = document.getElementById('result-satellite');
+  overlayCanvas  = document.getElementById('result-overlay');
+  statValueEl    = document.getElementById('live-stat-value');
+  progressContainer = document.getElementById('progress-bar-container');
+  progressBar    = document.getElementById('progress-bar');
+  progressText   = document.getElementById('progress-text');
 
   if (!beforeInput || !afterInput || !runBtn) return;
 
@@ -49,7 +54,6 @@ function init() {
       const file = e.dataTransfer.files[0];
       if (!file) return;
       const input = card.querySelector('input[type="file"]');
-      // Manually set file via DataTransfer
       const dt = new DataTransfer();
       dt.items.add(file);
       input.files = dt.files;
@@ -79,7 +83,7 @@ function showFilename(selector, file) {
 }
 
 function checkReady() {
-  runBtn.disabled = !(beforeFile && afterFile);
+  runBtn.disabled = !(beforeFile && afterFile) || isUploading;
 }
 
 function setError(msg) {
@@ -88,13 +92,48 @@ function setError(msg) {
   errorEl.style.display = msg ? 'block' : 'none';
 }
 
-/* ── Gradio file upload ────────────────────────────────────────────── */
-async function uploadFile(file) {
-  const form = new FormData();
-  form.append('files', file);
-  const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: form });
-  if (!res.ok) throw new Error(`Upload failed (${res.status})`);
-  return res.json(); // returns array of server paths
+function setProgress(pct) {
+  const rounded = Math.round(pct);
+  if (progressBar) progressBar.style.width = `${rounded}%`;
+  if (progressText) progressText.textContent = `Uploading: ${rounded}%`;
+}
+
+function showProgress(visible) {
+  if (progressContainer) {
+    progressContainer.style.display = visible ? 'flex' : 'none';
+  }
+}
+
+/* ── XHR upload with progress ──────────────────────────────────────── */
+function uploadFileXHR(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_BASE}/upload`);
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress(e.loaded / e.total);
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          resolve(JSON.parse(xhr.responseText));
+        } catch {
+          reject(new Error('Invalid upload response'));
+        }
+      } else {
+        reject(new Error(`Upload failed (${xhr.status})`));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Upload network error'));
+
+    const form = new FormData();
+    form.append('files', file);
+    xhr.send(form);
+  });
 }
 
 /* ── Run inference ─────────────────────────────────────────────────── */
@@ -102,20 +141,41 @@ async function runInference() {
   if (!beforeFile || !afterFile) return;
 
   // UI → loading
+  isUploading = true;
   loadingEl.style.display = 'flex';
   resultsEl.style.display = 'none';
   setError('');
   runBtn.disabled = true;
-  runBtn.textContent = 'PROCESSING…';
+  runBtn.textContent = 'UPLOADING…';
+
+  // Show progress bar
+  showProgress(true);
+  setProgress(0);
 
   try {
-    /* Step 1 — upload both files */
+    /* Step 1 — upload both files with progress tracking */
+    let totalProgress = { before: 0, after: 0 };
+
+    const updateCombinedProgress = () => {
+      const combined = (totalProgress.before + totalProgress.after) / 2 * 100;
+      setProgress(combined);
+    };
+
     const [beforePaths, afterPaths] = await Promise.all([
-      uploadFile(beforeFile),
-      uploadFile(afterFile)
+      uploadFileXHR(beforeFile, (pct) => {
+        totalProgress.before = pct;
+        updateCombinedProgress();
+      }),
+      uploadFileXHR(afterFile, (pct) => {
+        totalProgress.after = pct;
+        updateCombinedProgress();
+      })
     ]);
 
-    /* Step 2 — call /run/predict */
+    setProgress(100);
+    runBtn.textContent = 'PROCESSING…';
+
+    /* Step 2 — call /run/predict with api_name */
     const response = await fetch(`${API_BASE}/run/predict`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -124,7 +184,8 @@ async function runInference() {
           { path: beforePaths[0] },
           { path: afterPaths[0] }
         ],
-        fn_index: 0
+        fn_index: 0,
+        api_name: '/run_inference'
       })
     });
 
@@ -142,7 +203,9 @@ async function runInference() {
     console.error('[DeltaFlood] Inference error:', err);
     setError(`Inference failed — ${err.message}`);
   } finally {
+    isUploading = false;
     loadingEl.style.display = 'none';
+    showProgress(false);
     runBtn.disabled = false;
     runBtn.textContent = 'RUN DETECTION';
     checkReady();

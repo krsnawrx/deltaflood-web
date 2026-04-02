@@ -158,38 +158,47 @@ export function initSpectralUI() {
 
 // --- PATNA NARRATION ---
 export function initPatnaNarration() {
-    const lines = document.querySelectorAll('.narration-line')
-    if (!lines.length) return
+    const container = document.querySelector('.patna-narration');
+    const lines = document.querySelectorAll('.narration-line');
+    if (!container || !lines.length) return;
+
+    // All lines start off-screen below the viewport
+    gsap.set(lines, { opacity: 0, y: '100vh' });
+
+    // Pinned container with scroll-linked timeline
+    const tl = gsap.timeline({
+        scrollTrigger: {
+            trigger: '#patna',
+            start: '35% top',
+            end: 'bottom top',
+            pin: container,
+            scrub: 1
+        }
+    });
+
+    // --- "Pass-Through" rolling credits ---
+    // Each line travels the full journey: y:100vh → y:0 → y:-100vh
+    // Fade in during the first half, fade out during the second half.
+    // Lines are staggered so they follow each other in a continuous stream.
+    const journeyDur = 3;       // each line's full travel time (timeline units)
+    const stagger    = 1.4;     // gap between each line's start
 
     lines.forEach((line, i) => {
-        // Fade IN
-        gsap.fromTo(line,
-            { opacity: 0, y: 20 },
-            {
-                opacity: 1,
-                y: 0,
-                duration: 0.6,
-                scrollTrigger: {
-                    trigger: '#patna',
-                    start: `${20 + i * 12}% top`,
-                    end: `${35 + i * 12}% top`,
-                    scrub: 1
-                }
-            }
-        )
+        const start = i * stagger;
 
-        // Fade OUT before #demo section
-        gsap.to(line, {
-            opacity: 0,
-            y: -15,
-            scrollTrigger: {
-                trigger: '#patna',
-                start: '80% top',
-                end: '95% top',
-                scrub: 1
-            }
-        })
-    })
+        // Phase 1: Enter from bottom → center (fade in)
+        tl.fromTo(line,
+            { y: '100vh', opacity: 0 },
+            { y: '0vh',   opacity: 1, duration: journeyDur / 2, ease: 'power2.out' },
+            start
+        );
+
+        // Phase 2: Center → exit off top (fade out)
+        tl.to(line,
+            { y: '-100vh', opacity: 0, duration: journeyDur / 2, ease: 'power2.in' },
+            start + journeyDur / 2
+        );
+    });
 }
 
 // --- DASHBOARD FADE-IN ---
