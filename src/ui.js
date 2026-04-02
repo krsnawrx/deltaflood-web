@@ -162,6 +162,7 @@ export function initPatnaNarration() {
     if (!lines.length) return
 
     lines.forEach((line, i) => {
+        // Fade IN
         gsap.fromTo(line,
             { opacity: 0, y: 20 },
             {
@@ -176,6 +177,18 @@ export function initPatnaNarration() {
                 }
             }
         )
+
+        // Fade OUT before #demo section
+        gsap.to(line, {
+            opacity: 0,
+            y: -15,
+            scrollTrigger: {
+                trigger: '#patna',
+                start: '80% top',
+                end: '95% top',
+                scrub: 1
+            }
+        })
     })
 }
 

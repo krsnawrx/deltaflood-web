@@ -125,6 +125,72 @@
         </div>
 
       </div>
+
+      <!-- ── LIVE INFERENCE PANEL ───────────────────────────── -->
+      <div class="live-panel" id="live-panel">
+        <div class="live-header">
+          <h3>TRY IT YOURSELF</h3>
+          <p>Upload Sentinel-2 .tif imagery for real-time flood detection</p>
+        </div>
+
+        <div class="upload-grid">
+          <label class="upload-card" id="upload-before">
+            <input type="file" accept=".tif,.tiff" hidden />
+            <div class="upload-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <span class="upload-label">Before flood .tif</span>
+            <span class="upload-filename"></span>
+          </label>
+
+          <label class="upload-card" id="upload-after">
+            <input type="file" accept=".tif,.tiff" hidden />
+            <div class="upload-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <span class="upload-label">After flood .tif</span>
+            <span class="upload-filename"></span>
+          </label>
+        </div>
+
+        <button id="run-detection" disabled>RUN DETECTION</button>
+
+        <!-- Loading spinner -->
+        <div class="live-loading" id="live-loading">
+          <div class="loading-pulse"></div>
+          <span>Running inference…</span>
+        </div>
+
+        <!-- Error message -->
+        <div class="live-error" id="live-error"></div>
+
+        <!-- Results (hidden until API returns) -->
+        <div class="live-results" id="live-results">
+          <div class="live-results-grid">
+            <div class="result-card">
+              <div class="card-title">SATELLITE IMAGE</div>
+              <canvas class="result-canvas" id="result-satellite"></canvas>
+            </div>
+            <div class="result-card">
+              <div class="card-title">FLOOD DETECTION</div>
+              <canvas class="result-canvas" id="result-overlay"></canvas>
+            </div>
+          </div>
+          <div class="live-stat">
+            <div class="stat-label">FLOODED AREA</div>
+            <div class="stat-value" id="live-stat-value">—</div>
+          </div>
+        </div>
+      </div>
+
     </section>
     <section id="model" class="section" style="min-height: 200vh;"></section>
     <section id="impact" class="section" style="min-height: 150vh;"></section>
@@ -133,6 +199,7 @@
 
   <script type="module" src="/src/main.js"></script>
   <script type="module" src="/src/ui.js"></script>
+  <script type="module" src="/src/demo.js"></script>
 </body>
 
 </html>
