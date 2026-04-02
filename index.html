@@ -4,7 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DeltaFlood</title>
+  <meta name="description" content="DeltaFlood: Sentinel-2 satellite flood detection dashboard powered by AI inference on multispectral imagery. Patna, Bihar flood analysis." />
+  <meta name="theme-color" content="#000000" />
+  <title>DeltaFlood — Sentinel-2 Flood Detection</title>
   <link rel="stylesheet" href="/src/style.css">
 </head>
 
@@ -26,6 +28,58 @@
 
   <div id="scroll-tracker">
     <div id="scroll-progress"></div>
+  </div>
+
+  <!-- FAB TRAY -->
+  <div id="fab-tray">
+    <!-- Search FAB -->
+    <button id="fab-search" class="fab" title="Search location" aria-label="Search">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+    </button>
+    <!-- Sign-out FAB -->
+    <button id="fab-signout" class="fab" title="Sign out" aria-label="Sign out">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- SEARCH OVERLAY -->
+  <div id="search-overlay" role="dialog" aria-modal="true" aria-label="Search locations">
+    <div id="search-modal">
+      <div id="search-input-row">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input id="search-input" type="text" placeholder="Search flood region, district..." autocomplete="off" />
+        <button id="search-close" aria-label="Close search">&times;</button>
+      </div>
+      <div id="search-results">
+        <div class="search-result-item" data-region="patna">📍 Patna, Bihar — August 2019 Flood</div>
+        <div class="search-result-item" data-region="bhagalpur">📍 Bhagalpur, Bihar — Ganges Overflow</div>
+        <div class="search-result-item" data-region="darbhanga">📍 Darbhanga, Bihar — Bagmati Flood</div>
+        <div class="search-result-item" data-region="muzaffarpur">📍 Muzaffarpur, Bihar — Western Kosi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGN-OUT CONFIRMATION -->
+  <div id="signout-overlay" role="dialog" aria-modal="true" aria-label="Sign out confirmation">
+    <div id="signout-modal">
+      <div id="signout-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+        </svg>
+      </div>
+      <h3>Sign Out?</h3>
+      <p>You will be disconnected from the DeltaFlood mission dashboard.</p>
+      <div id="signout-actions">
+        <button id="signout-cancel" class="modal-btn modal-btn--secondary">Cancel</button>
+        <button id="signout-confirm" class="modal-btn modal-btn--danger">Sign Out</button>
+      </div>
+    </div>
   </div>
 
   <button id="sound-toggle" title="Toggle Sound">
@@ -130,6 +184,7 @@
 
   <script type="module" src="/src/main.js"></script>
   <script type="module" src="/src/ui.js"></script>
+  <script type="module" src="/src/fab.js"></script>
 </body>
 
 </html>

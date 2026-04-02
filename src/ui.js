@@ -179,6 +179,40 @@ export function initPatnaNarration() {
     })
 }
 
+// --- DASHBOARD FADE-IN ---
+export function initDashboardFadeIn() {
+    const targets = document.querySelectorAll(
+        '.dashboard-header, .image-card, .stat-card'
+    );
+    if (!targets.length) return;
+
+    // Start all hidden
+    targets.forEach(el => el.classList.add('dash-hidden'));
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Stagger based on DOM order
+                    const all = Array.from(targets);
+                    const idx = all.indexOf(entry.target);
+                    const delay = idx * 150; // ms stagger
+
+                    setTimeout(() => {
+                        entry.target.classList.remove('dash-hidden');
+                        entry.target.classList.add('dash-visible');
+                        entry.target.style.animationDelay = '0ms';
+                    }, delay);
+
+                    observer.unobserve(entry.target);
+                }
+            });
+        },
+        { threshold: 0.15 }
+    );
+
+    targets.forEach(el => observer.observe(el));
+}
 
 // --- INIT ALL ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -189,4 +223,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initBriefingCards();
     initSpectralUI();
     initPatnaNarration();
+    initDashboardFadeIn();
 });
