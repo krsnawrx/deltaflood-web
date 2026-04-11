@@ -312,18 +312,14 @@ body {
 }
 
 .patna-narration {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  padding: 180vh 2rem 8vh;
   pointer-events: none;
-  z-index: 10;
-  overflow: visible;
+  position: relative;
+  z-index: 100;
+  min-height: 100vh;
 }
 
 .narration-line {
@@ -335,6 +331,8 @@ body {
   text-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 2px 8px rgba(0, 0, 0, 0.9);
   text-align: center;
   width: 100%;
+  margin-bottom: 4rem;
+  opacity: 0;
 }
 
 .narration-line.location {
@@ -398,8 +396,7 @@ body {
 .dashboard-header {
   text-align: center;
   color: #fff;
-  padding-top: 25rem;
-  /* massive safe zone for narration text to fully exit before dashboard appears */
+  padding-top: 20vh;
   margin-bottom: 0.5rem;
 }
 

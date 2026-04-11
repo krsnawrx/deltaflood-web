@@ -158,66 +158,20 @@ export function initSpectralUI() {
 
 // --- PATNA NARRATION ---
 export function initPatnaNarration() {
-    const container = document.querySelector('.patna-narration');
-    const lines = document.querySelectorAll('.narration-line');
-    if (!container || !lines.length) return;
+    const lines = gsap.utils.toArray('.narration-line');
+    if (!lines.length) return;
 
-    // Container is fixed — hide it until the #patna section is active
-    gsap.set(container, { autoAlpha: 0 });
-
-    // Each line is independently positioned at center and animates y
-    gsap.set(lines, { opacity: 0, y: '100vh', position: 'absolute' });
-
-    // The timeline is scrubbed against the #patna section starting at 40%
-    // (after the Earth zoom / water transition is complete).
-    const tl = gsap.timeline({
-        scrollTrigger: {
-            trigger: '#patna',
-            start: '40% top',       // begin after Earth zoom finishes
-            end: 'bottom top',
-            scrub: 1,
-            onEnter: () => gsap.set(container, { autoAlpha: 1 }),
-            onLeave: () => gsap.set(container, { autoAlpha: 0 }),
-            onEnterBack: () => gsap.set(container, { autoAlpha: 1 }),
-            onLeaveBack: () => gsap.set(container, { autoAlpha: 0 })
-        }
+    lines.forEach(line => {
+        ScrollTrigger.create({
+            trigger: line,
+            start: 'top 60%',
+            end:   'top 20%',
+            onEnter:     () => gsap.to(line, { opacity: 1, duration: 1 }),
+            onLeave:     () => gsap.to(line, { opacity: 0, duration: 1 }),
+            onEnterBack: () => gsap.to(line, { opacity: 1, duration: 1 }),
+            onLeaveBack: () => gsap.to(line, { opacity: 0, duration: 1 })
+        });
     });
-
-    // --- True "Pass-Through" vertical motion ---
-    // Each line travels the FULL journey:  y: "100vh" → y: "-100vh"
-    // in a SINGLE continuous tween using GSAP keyframes.
-    //
-    // Opacity curve (continuous — no midpoint pause):
-    //   · 0%   → y: 100vh,  opacity: 0   (off-screen below)
-    //   · 35%  → y: 30vh,   opacity: 1   (fade in as line reaches lower-middle)
-    //   · 65%  → y: -30vh,  opacity: 1   (fully visible through the center)
-    //   · 100% → y: -100vh, opacity: 0   (fade out as line exits above)
-    //
-    const journeyDur = 3;       // each line's total travel duration (timeline units)
-    const stagger    = 1.6;     // offset between successive lines
-
-    lines.forEach((line, i) => {
-        const start = i * stagger;
-
-        tl.fromTo(line,
-            { y: '100vh', opacity: 0 },
-            {
-                keyframes: [
-                    { y: '30vh',   opacity: 1, duration: journeyDur * 0.35, ease: 'power2.out' },
-                    { y: '-30vh',  opacity: 1, duration: journeyDur * 0.30, ease: 'none' },
-                    { y: '-100vh', opacity: 0, duration: journeyDur * 0.35, ease: 'power2.in' }
-                ],
-                duration: journeyDur
-            },
-            start
-        );
-    });
-
-    // --- Mass-clear spacer ---
-    // Guarantees the LAST line ("Patna, Bihar") has completely scrolled off-screen
-    // before the "Sentinel-2" dashboard title becomes visible below.
-    const lastLineEnd = (lines.length - 1) * stagger + journeyDur;
-    tl.to({}, { duration: 3 }, lastLineEnd); // generous empty buffer
 }
 
 // --- DASHBOARD FADE-IN ---
