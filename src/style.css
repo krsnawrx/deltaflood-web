@@ -855,3 +855,172 @@ body {
       transparent);
   margin: 0 auto 3rem;
 }
+
+/* ==================================
+   HIDE EMPTY PLACEHOLDER SECTIONS
+   ================================== */
+#model,
+#impact {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden;
+}
+
+/* ==================================
+   OUTRO / CREDITS
+   ================================== */
+#outro.section {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+  background: #000;
+  height: auto;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 2rem 3rem;
+}
+
+.outro-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3.5rem;
+  max-width: 720px;
+  width: 100%;
+}
+
+/* Each group starts hidden for GSAP */
+.outro-group {
+  opacity: 0;
+  text-align: center;
+}
+
+/* --- Closing statement --- */
+.outro-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: #00d2ff;
+  text-shadow: 0 0 28px rgba(0, 210, 255, 0.45);
+  margin-bottom: 1.2rem;
+}
+
+.outro-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+}
+
+/* --- Built by --- */
+.outro-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.4rem;
+}
+
+.outro-affiliation {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.06em;
+}
+
+/* --- Tech stack chips --- */
+.outro-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.tech-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0, 210, 255, 0.05);
+  border: 1px solid rgba(0, 210, 255, 0.2);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.tech-chip:hover {
+  background: rgba(0, 210, 255, 0.12);
+  border-color: rgba(0, 210, 255, 0.5);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.15);
+}
+
+/* --- Social links --- */
+.outro-links {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+}
+
+.outro-link-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.outro-link-btn:hover {
+  border-color: #00d2ff;
+  color: #00d2ff;
+  background: rgba(0, 210, 255, 0.08);
+  box-shadow: 0 0 18px rgba(0, 210, 255, 0.2);
+  transform: translateY(-3px);
+}
+
+.outro-hf-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* --- Footer copyright --- */
+.outro-copyright {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.05em;
+}
+
+/* --- Responsive --- */
+@media (max-width: 600px) {
+  .outro-title {
+    font-size: 2rem;
+    letter-spacing: 0.15em;
+  }
+
+  .outro-name {
+    font-size: 1.2rem;
+  }
+
+  .outro-subtitle {
+    font-size: 0.85rem;
+  }
+}

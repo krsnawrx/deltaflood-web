@@ -255,6 +255,30 @@ export function initDashboardFadeIn() {
     targets.forEach(el => observer.observe(el));
 }
 
+// --- OUTRO / CREDITS ---
+export function initOutro() {
+    const groups = document.querySelectorAll('.outro-group');
+    if (!groups.length) return;
+
+    // All groups start at opacity: 0 via CSS
+    gsap.set(groups, { y: 20 });
+
+    ScrollTrigger.create({
+        trigger: '#outro',
+        start: 'top 80%',
+        once: true,
+        onEnter: () => {
+            gsap.to(groups, {
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                ease: 'power2.out',
+                stagger: 0.2
+            });
+        }
+    });
+}
+
 // --- INIT ALL ---
 document.addEventListener('DOMContentLoaded', () => {
     initLoader();
@@ -265,4 +289,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initSpectralUI();
     initPatnaNarration();
     initDashboardFadeIn();
+    initOutro();
 });
