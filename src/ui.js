@@ -261,7 +261,7 @@ export function initOutro() {
     if (!groups.length) return;
 
     // All groups start at opacity: 0 via CSS
-    gsap.set(groups, { y: 20 });
+    gsap.set(groups, { opacity: 0, y: 30 });
 
     ScrollTrigger.create({
         trigger: '#outro',
