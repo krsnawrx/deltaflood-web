@@ -337,8 +337,9 @@ ScrollTrigger.create({
   },
 
   onLeaveBack: () => {
-    waterShader.visible = false
-    window._waterVisible = false
+    // Water stays visible once triggered — do not hide on scroll back
+    // waterShader.visible = false
+    // window._waterVisible = false
     gsap.to(earthMaterial, { opacity: 1, duration: 1 })
     gsap.to(atmosphereMaterial, { opacity: 0.25, duration: 1 })
     gsap.to(starMaterial, { opacity: 1, duration: 0.5 })
