@@ -239,6 +239,8 @@ async function renderResults(satData, maskData, floodStat) {
     loadImage(maskUrl)
   ]);
 
+  resultsEl.style.visibility = 'hidden';
+  resultsEl.style.display = 'block';
 
   const hostW = satCanvas.parentElement.clientWidth - 32;
   const w = Math.round(hostW * window.devicePixelRatio);
@@ -282,8 +284,7 @@ async function renderResults(satData, maskData, floodStat) {
   ovCtx.globalCompositeOperation = 'source-over';
 
   statValueEl.textContent = typeof floodStat === 'string' ? floodStat : `${floodStat} sq km`;
-
-  resultsEl.style.display = 'block';
+  resultsEl.style.visibility = 'visible';
   resultsEl.classList.remove('live-fade-in');
   void resultsEl.offsetWidth;
   resultsEl.classList.add('live-fade-in');
