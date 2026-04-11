@@ -339,6 +339,7 @@ body {
   font-size: 0.9rem;
   color: rgba(180, 220, 255, 1);
   margin-top: 1rem;
+  margin-bottom: 15rem;
   letter-spacing: 0.3rem;
   text-shadow: 0 0 20px rgba(100, 180, 255, 0.8);
 }
@@ -396,7 +397,7 @@ body {
 .dashboard-header {
   text-align: center;
   color: #fff;
-  padding-top: 20vh;
+  padding-top: 40vh;
   margin-bottom: 0.5rem;
 }
 

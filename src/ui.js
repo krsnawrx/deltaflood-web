@@ -165,7 +165,7 @@ export function initPatnaNarration() {
         ScrollTrigger.create({
             trigger: line,
             start: 'top 60%',
-            end:   'top 20%',
+            end:   'top 40%',
             onEnter:     () => gsap.to(line, { opacity: 1, duration: 1 }),
             onLeave:     () => gsap.to(line, { opacity: 0, duration: 1 }),
             onEnterBack: () => gsap.to(line, { opacity: 1, duration: 1 }),
