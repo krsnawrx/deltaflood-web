@@ -162,43 +162,62 @@ export function initPatnaNarration() {
     const lines = document.querySelectorAll('.narration-line');
     if (!container || !lines.length) return;
 
-    // All lines start off-screen below the viewport
-    gsap.set(lines, { opacity: 0, y: '100vh' });
+    // Container is fixed — hide it until the #patna section is active
+    gsap.set(container, { autoAlpha: 0 });
 
-    // Pinned container with scroll-linked timeline
+    // Each line is independently positioned at center and animates y
+    gsap.set(lines, { opacity: 0, y: '100vh', position: 'absolute' });
+
+    // The timeline is scrubbed against the #patna section starting at 40%
+    // (after the Earth zoom / water transition is complete).
     const tl = gsap.timeline({
         scrollTrigger: {
             trigger: '#patna',
-            start: '35% top',
+            start: '40% top',       // begin after Earth zoom finishes
             end: 'bottom top',
-            pin: container,
-            scrub: 1
+            scrub: 1,
+            onEnter: () => gsap.set(container, { autoAlpha: 1 }),
+            onLeave: () => gsap.set(container, { autoAlpha: 0 }),
+            onEnterBack: () => gsap.set(container, { autoAlpha: 1 }),
+            onLeaveBack: () => gsap.set(container, { autoAlpha: 0 })
         }
     });
 
-    // --- "Pass-Through" rolling credits ---
-    // Each line travels the full journey: y:100vh → y:0 → y:-100vh
-    // Fade in during the first half, fade out during the second half.
-    // Lines are staggered so they follow each other in a continuous stream.
-    const journeyDur = 3;       // each line's full travel time (timeline units)
-    const stagger    = 1.4;     // gap between each line's start
+    // --- True "Pass-Through" vertical motion ---
+    // Each line travels the FULL journey:  y: "100vh" → y: "-100vh"
+    // in a SINGLE continuous tween using GSAP keyframes.
+    //
+    // Opacity curve (continuous — no midpoint pause):
+    //   · 0%   → y: 100vh,  opacity: 0   (off-screen below)
+    //   · 35%  → y: 30vh,   opacity: 1   (fade in as line reaches lower-middle)
+    //   · 65%  → y: -30vh,  opacity: 1   (fully visible through the center)
+    //   · 100% → y: -100vh, opacity: 0   (fade out as line exits above)
+    //
+    const journeyDur = 3;       // each line's total travel duration (timeline units)
+    const stagger    = 1.6;     // offset between successive lines
 
     lines.forEach((line, i) => {
         const start = i * stagger;
 
-        // Phase 1: Enter from bottom → center (fade in)
         tl.fromTo(line,
             { y: '100vh', opacity: 0 },
-            { y: '0vh',   opacity: 1, duration: journeyDur / 2, ease: 'power2.out' },
+            {
+                keyframes: [
+                    { y: '30vh',   opacity: 1, duration: journeyDur * 0.35, ease: 'power2.out' },
+                    { y: '-30vh',  opacity: 1, duration: journeyDur * 0.30, ease: 'none' },
+                    { y: '-100vh', opacity: 0, duration: journeyDur * 0.35, ease: 'power2.in' }
+                ],
+                duration: journeyDur
+            },
             start
         );
-
-        // Phase 2: Center → exit off top (fade out)
-        tl.to(line,
-            { y: '-100vh', opacity: 0, duration: journeyDur / 2, ease: 'power2.in' },
-            start + journeyDur / 2
-        );
     });
+
+    // --- Mass-clear spacer ---
+    // Guarantees the LAST line ("Patna, Bihar") has completely scrolled off-screen
+    // before the "Sentinel-2" dashboard title becomes visible below.
+    const lastLineEnd = (lines.length - 1) * stagger + journeyDur;
+    tl.to({}, { duration: 3 }, lastLineEnd); // generous empty buffer
 }
 
 // --- DASHBOARD FADE-IN ---

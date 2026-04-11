@@ -312,17 +312,18 @@ body {
 }
 
 .patna-narration {
-  position: absolute;
-  top: 36%;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
   z-index: 10;
-  width: 100%;
+  overflow: visible;
 }
 
 .narration-line {
@@ -332,6 +333,8 @@ body {
   color: white;
   letter-spacing: 0.1rem;
   text-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 2px 8px rgba(0, 0, 0, 0.9);
+  text-align: center;
+  width: 100%;
 }
 
 .narration-line.location {
@@ -395,8 +398,8 @@ body {
 .dashboard-header {
   text-align: center;
   color: #fff;
-  padding-top: 15rem;
-  /* extra clearance from narration stats above */
+  padding-top: 25rem;
+  /* massive safe zone for narration text to fully exit before dashboard appears */
   margin-bottom: 0.5rem;
 }
 
@@ -814,6 +817,11 @@ body {
   background: #000509;
   border-radius: 4px;
   display: block;
+}
+
+/* Cyan mask overlay: sits on top of satellite with screen blend */
+#result-overlay {
+  mix-blend-mode: screen;
 }
 
 /* Live stat (flooded area) */
