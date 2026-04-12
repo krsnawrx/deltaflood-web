@@ -5,6 +5,15 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { latLongToVector3 } from './utils/latLongToVector3.js'
 import { Water } from 'three/examples/jsm/objects/Water.js'
 
+// Asset imports — Vite hashes these into dist/assets at build time
+import earthMap from './assets/earth.jpg'
+import waterNormalsMap from './assets/waternormals.jpg'
+
+// For files consumed at runtime (Audio, GLTFLoader) use new URL()
+const satelliteModelUrl = new URL('./assets/satellite.glb', import.meta.url).href
+const spaceAudioUrl     = new URL('./assets/sounds/space.mp3', import.meta.url).href
+const underwaterAudioUrl = new URL('./assets/sounds/underwater.mp3', import.meta.url).href
+
 gsap.registerPlugin(ScrollTrigger)
 
 window.addEventListener('load', () => {
@@ -50,7 +59,7 @@ camera.position.z = 3
 
 const textureLoader = new THREE.TextureLoader()
 
-const earthTexture = textureLoader.load('/src/assets/earth.jpg')
+const earthTexture = textureLoader.load(earthMap)
 earthTexture.anisotropy = renderer.capabilities.getMaxAnisotropy()
 
 const earthGeometry = new THREE.SphereGeometry(1, 64, 64)
@@ -121,12 +130,12 @@ scene.add(stars)
    AUDIO
 ============================ */
 
-const spaceAudio = new Audio('/src/assets/sounds/space.mp3')
+const spaceAudio = new Audio(spaceAudioUrl)
 spaceAudio.loop = true
 spaceAudio.volume = 0
 spaceAudio.preload = "auto"
 
-const underwaterAudio = new Audio('/src/assets/sounds/underwater.mp3')
+const underwaterAudio = new Audio(underwaterAudioUrl)
 underwaterAudio.loop = true
 underwaterAudio.volume = 0
 underwaterAudio.preload = "auto"
@@ -169,7 +178,7 @@ let satelliteOrbitActive = false
 
 const gltfLoader = new GLTFLoader()
 
-gltfLoader.load('/src/assets/satellite.glb', (gltf) => {
+gltfLoader.load(satelliteModelUrl, (gltf) => {
 
   satellite = gltf.scene
   satellite.scale.set(1.5, 1.5, 1.5)
@@ -240,7 +249,7 @@ const waterShader = new Water(
   {
     textureWidth: 512,
     textureHeight: 512,
-    waterNormals: new THREE.TextureLoader().load('/src/assets/waternormals.jpg', (texture) => {
+    waterNormals: new THREE.TextureLoader().load(waterNormalsMap, (texture) => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping
     }),
     sunDirection: new THREE.Vector3(1, 1, 0).normalize(),
