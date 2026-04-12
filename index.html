@@ -7,8 +7,8 @@
   <meta name="description" content="DeltaFlood: Sentinel-2 satellite flood detection dashboard powered by AI inference on multispectral imagery. Patna, Bihar flood analysis." />
   <meta name="theme-color" content="#000000" />
   <title>DeltaFlood — Sentinel-2 Flood Detection</title>
-  <script type="module" crossorigin src="/deltaflood-web/assets/index-Vg8VA7Dy.js"></script>
-  <link rel="stylesheet" crossorigin href="/deltaflood-web/assets/index-Cs4Drp15.css">
+  <script type="module" crossorigin src="/deltaflood-web/assets/index-TDxtjFdK.js"></script>
+  <link rel="stylesheet" crossorigin href="/deltaflood-web/assets/index-DU1Z1dPn.css">
 </head>
 
 <body>
@@ -23,6 +23,9 @@
     </div>
     <div class="loader-text">Loading DeltaFlood...</div>
   </div>
+
+  <!-- Audio click-catcher — transparent, captures first click for autoplay -->
+  <div id="audio-unlocker"></div>
 
   <div id="cursor"></div>
   <div id="cursor-follower"></div>
@@ -43,7 +46,8 @@
     <section id="hero" class="section">
       <div class="hero-text">
         <h1>DELTAFLOOD</h1>
-        <p>Scroll to explore</p>
+        <p class="hero-click-prompt">Click to start</p>
+        <p class="hero-scroll-hint">Scroll to explore</p>
       </div>
     </section>
     <section id="satellite" class="section" style="height: 100vh;">
