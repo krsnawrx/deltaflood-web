@@ -870,7 +870,7 @@ body {
    ================================== */
 #outro.section {
   position: relative;
-  z-index: 10;
+  z-index: 500;
   pointer-events: auto;
   height: auto;
   min-height: 100vh;
@@ -878,15 +878,18 @@ body {
   align-items: center;
   justify-content: center;
   padding: 6rem 2rem 3rem;
+  /* Start fully transparent — GSAP scrubs this to dark */
+  background-color: rgba(0, 0, 0, 0);
 }
 
-/* Semi-transparent overlay for text readability over Three.js water shader */
+/* Overlay is now driven by GSAP on the section itself; keep pseudo for extra safety */
 #outro.section::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: transparent;
   z-index: 0;
+  pointer-events: none;
 }
 
 .outro-inner {
@@ -960,14 +963,16 @@ body {
   color: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  transition: all 0.3s ease;
+  transition: all 0.35s ease;
+  cursor: default;
 }
 
 .tech-chip:hover {
-  background: rgba(0, 210, 255, 0.12);
-  border-color: rgba(0, 210, 255, 0.5);
+  background: rgba(0, 210, 255, 0.18);
+  border-color: rgba(0, 210, 255, 0.7);
   color: #fff;
-  box-shadow: 0 0 12px rgba(0, 210, 255, 0.15);
+  box-shadow: 0 0 18px rgba(0, 210, 255, 0.35), 0 0 6px rgba(0, 210, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 /* --- Social links --- */

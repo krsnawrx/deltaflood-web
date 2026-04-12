@@ -209,28 +209,109 @@ export function initDashboardFadeIn() {
     targets.forEach(el => observer.observe(el));
 }
 
-// --- OUTRO / CREDITS ---
+// --- OUTRO / CREDITS (Cinematic Deep-Dive) ---
 export function initOutro() {
-    const groups = document.querySelectorAll('.outro-group');
-    if (!groups.length) return;
+    const outro = document.querySelector('#outro');
+    if (!outro) return;
 
-    // All groups start at opacity: 0 via CSS
-    gsap.set(groups, { opacity: 0, y: 30 });
+    const title     = outro.querySelector('.outro-title');
+    const subtitles = outro.querySelectorAll('.outro-subtitle');
+    const authorGrp = outro.querySelector('.outro-author');
+    const chipGrp   = outro.querySelector('.outro-chips');
+    const chips     = outro.querySelectorAll('.tech-chip');
+    const linksGrp  = outro.querySelector('.outro-links');
+    const footerGrp = outro.querySelector('.outro-footer');
+    const groups    = outro.querySelectorAll('.outro-group');
 
-    ScrollTrigger.create({
-        trigger: '#outro',
-        start: 'top 80%',
-        once: true,
-        onEnter: () => {
-            gsap.to(groups, {
+    // --- 1. Scrub-based background fade ---
+    // Ties the overlay darkening directly to scroll speed (scrub: 1).
+    gsap.fromTo(outro,
+        { backgroundColor: 'rgba(0, 0, 0, 0)' },
+        {
+            backgroundColor: 'rgba(2, 6, 18, 0.92)',
+            ease: 'none',
+            scrollTrigger: {
+                trigger: outro,
+                start: 'top 80%',
+                end: 'top 20%',
+                scrub: 1,
+            }
+        }
+    );
+
+    // --- 2. Credits float-up stagger ---
+    // All groups start hidden (opacity: 0 via CSS). We initialise y offset.
+    gsap.set(groups, { y: 50 });
+
+    // Collect the ordered credit elements for staggered reveal
+    const creditElements = [
+        title,
+        ...subtitles,
+        authorGrp,
+        chipGrp,
+        linksGrp,
+        footerGrp
+    ].filter(Boolean);
+
+    creditElements.forEach((el, i) => {
+        gsap.fromTo(el,
+            { opacity: 0, y: 50 },
+            {
                 opacity: 1,
                 y: 0,
-                duration: 0.8,
+                duration: 1,
                 ease: 'power2.out',
-                stagger: 0.2
-            });
-        }
+                scrollTrigger: {
+                    trigger: outro,
+                    start: 'top 60%',
+                    end: 'top 15%',
+                    toggleActions: 'play none none reverse',
+                },
+                delay: i * 0.2,
+            }
+        );
     });
+
+    // Also reveal any parent group that holds the elements
+    groups.forEach((grp) => {
+        gsap.fromTo(grp,
+            { opacity: 0, y: 50 },
+            {
+                opacity: 1,
+                y: 0,
+                duration: 0.9,
+                ease: 'power2.out',
+                scrollTrigger: {
+                    trigger: outro,
+                    start: 'top 65%',
+                    end: 'top 20%',
+                    toggleActions: 'play none none reverse',
+                }
+            }
+        );
+    });
+
+    // --- 3. Tech tags individual glow-in (last to light up) ---
+    if (chips.length) {
+        chips.forEach((chip, i) => {
+            gsap.fromTo(chip,
+                { opacity: 0, y: 20, scale: 0.92 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.6,
+                    ease: 'back.out(1.4)',
+                    scrollTrigger: {
+                        trigger: outro,
+                        start: 'top 45%',
+                        toggleActions: 'play none none reverse',
+                    },
+                    delay: 0.6 + (i * 0.1),   // extra 0.6s base delay
+                }
+            );
+        });
+    }
 }
 
 // --- INIT ALL ---
