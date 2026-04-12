@@ -326,17 +326,3 @@ document.addEventListener('DOMContentLoaded', () => {
     initDashboardFadeIn();
     initOutro();
 });
-
-const startSpaceAudio = () => {
-    if (spaceAudio.paused) {
-        spaceAudio.play().catch(e => console.log("Waiting for interaction..."));
-    }
-    // Remove the listeners once it starts
-    window.removeEventListener('click', startSpaceAudio);
-    window.removeEventListener('wheel', startSpaceAudio);
-    window.removeEventListener('touchstart', startSpaceAudio);
-};
-
-window.addEventListener('click', startSpaceAudio);
-window.addEventListener('wheel', startSpaceAudio, { passive: true });
-window.addEventListener('touchstart', startSpaceAudio, { passive: true });

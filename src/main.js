@@ -130,36 +130,59 @@ scene.add(stars)
    AUDIO
 ============================ */
 
+const SPACE_VOL = 0.5
+const UNDERWATER_VOL = 0.6
+const FADE_IN_DURATION = 3
+const CROSSFADE_DURATION = 2
+
 const spaceAudio = new Audio(spaceAudioUrl)
 spaceAudio.loop = true
 spaceAudio.volume = 0
-spaceAudio.preload = "auto"
+spaceAudio.preload = 'auto'
 
 const underwaterAudio = new Audio(underwaterAudioUrl)
 underwaterAudio.loop = true
 underwaterAudio.volume = 0
-underwaterAudio.preload = "auto"
+underwaterAudio.preload = 'auto'
 
 let audioUnlocked = false
+let isMuted = false
+// Track which "zone" we're in so the mute toggle knows what to restore
+let activeTrack = 'space'  // 'space' | 'underwater'
 
+/**
+ * Single unlock gate — fires on the very first user gesture,
+ * then self-destructs via { once: true }.
+ */
 const unlockAudio = () => {
   if (audioUnlocked) return
   audioUnlocked = true
+  console.log('[Audio] Unlocked on first interaction')
   spaceAudio.play()
     .then(() => {
-      gsap.to(spaceAudio, { volume: 0.4, duration: 3 })
+      if (!isMuted) {
+        gsap.to(spaceAudio, { volume: SPACE_VOL, duration: FADE_IN_DURATION })
+      }
     })
-    .catch(e => console.log("Audio blocked:", e))
+    .catch(e => console.warn('[Audio] Play blocked:', e))
 }
 
-window.addEventListener('mousemove', unlockAudio, { once: true })
-window.addEventListener('pointerdown', unlockAudio, { once: true })
-window.addEventListener('scroll', unlockAudio, { once: true })
+// Every gesture type that counts as "user interaction" for autoplay policy
+;['click', 'wheel', 'touchstart', 'scroll', 'pointerdown', 'keydown'].forEach(evt => {
+  window.addEventListener(evt, unlockAudio, { once: true, passive: true })
+})
 
+/**
+ * Mute toggle — dispatched by the sound button in ui.js.
+ * Respects which track is currently active.
+ */
 window.addEventListener('soundToggled', (e) => {
-  const { isMuted } = e.detail
-  gsap.to(spaceAudio, { volume: isMuted ? 0 : 0.4, duration: 1 })
-  gsap.to(underwaterAudio, { volume: isMuted ? 0 : 0.5, duration: 1 })
+  isMuted = e.detail.isMuted
+  if (activeTrack === 'space') {
+    gsap.to(spaceAudio, { volume: isMuted ? 0 : SPACE_VOL, duration: 1 })
+  } else {
+    gsap.to(underwaterAudio, { volume: isMuted ? 0 : UNDERWATER_VOL, duration: 1 })
+  }
 })
 
 /* ============================
@@ -282,8 +305,9 @@ const zoomTl = gsap.timeline({
     scrub: 1.5,
 
     onEnter: () => {
-      if (audioUnlocked) {
-        gsap.to(spaceAudio, { volume: 0.1, duration: 2 })
+      // Begin fading space audio as we approach the water zone
+      if (audioUnlocked && !isMuted) {
+        gsap.to(spaceAudio, { volume: 0, duration: CROSSFADE_DURATION })
       }
       if (satellite) {
         gsap.to(satellitePivot.scale, { x: 0, y: 0, z: 0, duration: 1, ease: 'power2.in' })
@@ -299,9 +323,20 @@ const zoomTl = gsap.timeline({
     },
 
     onLeaveBack: () => {
+      // Restore space audio when scrolling back up past the zoom point
       if (audioUnlocked) {
-        spaceAudio.play().catch(() => { })
-        gsap.to(spaceAudio, { volume: 0.4, duration: 2 })
+        activeTrack = 'space'
+        spaceAudio.play().catch(() => {})
+        if (!isMuted) {
+          gsap.to(spaceAudio, { volume: SPACE_VOL, duration: CROSSFADE_DURATION })
+        }
+        // Fade out underwater if it was still playing
+        gsap.to(underwaterAudio, {
+          volume: 0, duration: CROSSFADE_DURATION, onComplete: () => {
+            underwaterAudio.pause()
+            underwaterAudio.currentTime = 0
+          }
+        })
       }
       satelliteOrbitActive = true
       gsap.to(satellitePivot.scale, { x: 1, y: 1, z: 1, duration: 1, ease: 'power2.out' })
@@ -339,28 +374,48 @@ ScrollTrigger.create({
     window._waterVisible = true
     gsap.to(camera.position, { x: 0, y: 5, z: 0, duration: 1.5, ease: 'power2.inOut' })
     gsap.to(camera.rotation, { x: -Math.PI / 2, duration: 1.5, ease: 'power2.inOut' })
+
+    // Crossfade: space → underwater
     if (audioUnlocked) {
-      underwaterAudio.play().catch(() => { })
-      gsap.fromTo(underwaterAudio, { volume: 0 }, { volume: 0.5, duration: 3 })
+      activeTrack = 'underwater'
+      // Ensure space is fully faded and paused
+      gsap.to(spaceAudio, {
+        volume: 0, duration: CROSSFADE_DURATION, onComplete: () => {
+          spaceAudio.pause()
+        }
+      })
+      // Bring in underwater
+      underwaterAudio.play().catch(() => {})
+      if (!isMuted) {
+        gsap.fromTo(underwaterAudio,
+          { volume: 0 },
+          { volume: UNDERWATER_VOL, duration: CROSSFADE_DURATION }
+        )
+      }
     }
   },
 
   onLeaveBack: () => {
     // Water stays visible once triggered — do not hide on scroll back
-    // waterShader.visible = false
-    // window._waterVisible = false
     gsap.to(earthMaterial, { opacity: 1, duration: 1 })
     gsap.to(atmosphereMaterial, { opacity: 0.25, duration: 1 })
     gsap.to(starMaterial, { opacity: 1, duration: 0.5 })
     gsap.to(camera.position, { x: 0, y: 0, z: 1.9, duration: 1.5 })
     gsap.to(camera.rotation, { x: 0, duration: 1.5 })
+
+    // Crossfade: underwater → space
     if (audioUnlocked) {
+      activeTrack = 'space'
       gsap.to(underwaterAudio, {
-        volume: 0, duration: 2, onComplete: () => {
+        volume: 0, duration: CROSSFADE_DURATION, onComplete: () => {
           underwaterAudio.pause()
           underwaterAudio.currentTime = 0
         }
       })
+      spaceAudio.play().catch(() => {})
+      if (!isMuted) {
+        gsap.to(spaceAudio, { volume: SPACE_VOL, duration: CROSSFADE_DURATION })
+      }
     }
   }
 })
