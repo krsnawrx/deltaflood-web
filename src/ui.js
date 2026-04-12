@@ -165,9 +165,9 @@ export function initPatnaNarration() {
         ScrollTrigger.create({
             trigger: line,
             start: 'top 60%',
-            end:   'top 40%',
-            onEnter:     () => gsap.to(line, { opacity: 1, duration: 1 }),
-            onLeave:     () => gsap.to(line, { opacity: 0, duration: 1 }),
+            end: 'top 40%',
+            onEnter: () => gsap.to(line, { opacity: 1, duration: 1 }),
+            onLeave: () => gsap.to(line, { opacity: 0, duration: 1 }),
             onEnterBack: () => gsap.to(line, { opacity: 1, duration: 1 }),
             onLeaveBack: () => gsap.to(line, { opacity: 0, duration: 1 })
         });
@@ -214,14 +214,14 @@ export function initOutro() {
     const outro = document.querySelector('#outro');
     if (!outro) return;
 
-    const title     = outro.querySelector('.outro-title');
+    const title = outro.querySelector('.outro-title');
     const subtitles = outro.querySelectorAll('.outro-subtitle');
     const authorGrp = outro.querySelector('.outro-author');
-    const chipGrp   = outro.querySelector('.outro-chips');
-    const chips     = outro.querySelectorAll('.tech-chip');
-    const linksGrp  = outro.querySelector('.outro-links');
+    const chipGrp = outro.querySelector('.outro-chips');
+    const chips = outro.querySelectorAll('.tech-chip');
+    const linksGrp = outro.querySelector('.outro-links');
     const footerGrp = outro.querySelector('.outro-footer');
-    const groups    = outro.querySelectorAll('.outro-group');
+    const groups = outro.querySelectorAll('.outro-group');
 
     // --- 1. Scrub-based background fade ---
     // Ties the overlay darkening directly to scroll speed (scrub: 1).
@@ -326,3 +326,17 @@ document.addEventListener('DOMContentLoaded', () => {
     initDashboardFadeIn();
     initOutro();
 });
+
+const startSpaceAudio = () => {
+    if (spaceAudio.paused) {
+        spaceAudio.play().catch(e => console.log("Waiting for interaction..."));
+    }
+    // Remove the listeners once it starts
+    window.removeEventListener('click', startSpaceAudio);
+    window.removeEventListener('wheel', startSpaceAudio);
+    window.removeEventListener('touchstart', startSpaceAudio);
+};
+
+window.addEventListener('click', startSpaceAudio);
+window.addEventListener('wheel', startSpaceAudio, { passive: true });
+window.addEventListener('touchstart', startSpaceAudio, { passive: true });

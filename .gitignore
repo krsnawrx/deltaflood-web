@@ -2,6 +2,4 @@ node_modules
 dist
 .DS_Store
 .env
-src/assets/earth.jpg
-src/assets/satellite.glb
-src/assets/sounds/
+# Removed the assets and sounds from here so they can be pushed to GitHub
