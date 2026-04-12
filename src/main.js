@@ -151,26 +151,76 @@ let isMuted = false
 let activeTrack = 'space'  // 'space' | 'underwater'
 
 /**
- * Single unlock gate — fires on the very first user gesture,
- * then self-destructs via { once: true }.
+ * Interaction Bridge — the #audio-unlocker overlay captures the first
+ * genuine user gesture (click / tap / keydown) to satisfy browser
+ * autoplay policy, then fades away permanently.
  */
+const unlockerEl = document.getElementById('audio-unlocker')
+const clickPrompt = document.querySelector('.hero-click-prompt')
+const scrollHint = document.querySelector('.hero-scroll-hint')
+
 const unlockAudio = () => {
   if (audioUnlocked) return
   audioUnlocked = true
-  console.log('[Audio] Unlocked on first interaction')
+
+  // Power-cycle the Web Audio context if it was suspended
+  try {
+    const ctx = THREE.AudioContext.getContext()
+    if (ctx.state !== 'running') {
+      ctx.resume().then(() => console.log('[Audio] AudioContext resumed'))
+    }
+  } catch (_) { /* THREE.AudioContext may not exist if no 3D audio is used */ }
+
+  // Start space music
   spaceAudio.play()
     .then(() => {
+      console.log('[Audio] Space audio playing')
       if (!isMuted) {
         gsap.to(spaceAudio, { volume: SPACE_VOL, duration: FADE_IN_DURATION })
       }
     })
     .catch(e => console.warn('[Audio] Play blocked:', e))
+
+  // --- Hero text transition ---
+  // Step 1: Fade out the "Click to start" prompt
+  if (clickPrompt) {
+    gsap.to(clickPrompt, {
+      opacity: 0,
+      y: -10,
+      duration: 0.6,
+      ease: 'power2.inOut',
+      onComplete: () => { clickPrompt.style.display = 'none' }
+    })
+  }
+
+  // Step 2: Fade in the "Scroll to explore" hint after a short delay
+  if (scrollHint) {
+    gsap.to(scrollHint, {
+      opacity: 0.5,
+      y: 0,
+      duration: 1,
+      delay: 0.6,
+      ease: 'power2.out',
+      onComplete: () => {
+        scrollHint.style.animation = 'scrollHintPulse 2.5s ease-in-out infinite'
+      }
+    })
+  }
+
+  // Step 3: Remove the transparent click-catcher overlay
+  if (unlockerEl) {
+    unlockerEl.style.pointerEvents = 'none'
+    unlockerEl.style.display = 'none'
+  }
 }
 
-// Every gesture type that counts as "user interaction" for autoplay policy
-;['click', 'wheel', 'touchstart', 'scroll', 'pointerdown', 'keydown'].forEach(evt => {
-  window.addEventListener(evt, unlockAudio, { once: true, passive: true })
-})
+// The overlay itself captures click/tap
+if (unlockerEl) {
+  unlockerEl.addEventListener('click', unlockAudio, { once: true })
+  unlockerEl.addEventListener('touchstart', unlockAudio, { once: true, passive: true })
+}
+// Keyboard fallback (spacebar / enter while browsing)
+window.addEventListener('keydown', unlockAudio, { once: true })
 
 /**
  * Mute toggle — dispatched by the sound button in ui.js.
