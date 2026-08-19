@@ -1,0 +1,7 @@
+Hero — Interactive 3D globe, space ambience, rotatable
+Satellite sequence — Satellite enters orbit, info appears, spectral band split (RGB/NIR), explains data capture
+Zoom to Patna — Camera dives from space to Bihar, flood water surface appears, casualty narration, cursor ripples, ambient water sound
+Live Demo — Preloaded Patna Sentinel-2 image, HuggingFace inference, flood mask overlay appears on the 3D water scene
+The Model — U-Net layers animate, IoU counts up, technical credibility section
+Impact — 3D terrain, flood overlay, real casualty/displacement data
+Outro — Water recedes, land revealed, "Built by Krishna Kumar"
