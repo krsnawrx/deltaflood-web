@@ -3,3 +3,4 @@ dist
 .DS_Store
 .env
 # Removed the assets and sounds from here so they can be pushed to GitHub
+DeltaFlood Preview.mp4
